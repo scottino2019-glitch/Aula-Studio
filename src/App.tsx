@@ -13,10 +13,12 @@ export default function App() {
   const [mood, setMoodState] = useState<number | null>(null);
 
   // PDF Library State
-  const [pdfList, setPdfList] = useState<Array<{ name: string; url?: string }>>([
-    { name: 'Atena_Grammatica.pdf' },
-    { name: 'chinese-per-i-bambini.pdf' },
-  ]);
+  const defaultPdfs = [
+    { name: 'Atena_Grammatica.pdf', url: '/Atena_Grammatica.pdf' },
+    { name: 'chinese-per-i-bambini.pdf', url: '/chinese-per-i-bambini.pdf' },
+  ];
+
+  const [pdfList, setPdfList] = useState<Array<{ name: string; url?: string }>>(defaultPdfs);
   const [selectedPdf, setSelectedPdf] = useState<{ name: string; url?: string } | null>(null);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
@@ -60,7 +62,11 @@ export default function App() {
       try {
         const parsed = JSON.parse(savedPdfs);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setPdfList(parsed);
+          const withUrls = parsed.map((item: { name: string; url?: string }) => ({
+            name: item.name,
+            url: item.url || `/${item.name}`
+          }));
+          setPdfList(withUrls);
         }
       } catch (e) {
         console.error('Error loading saved PDFs', e);
@@ -141,8 +147,8 @@ export default function App() {
     const updated = [newItem, ...pdfList];
     setPdfList(updated);
     
-    // Save metadata without blob url to localStorage
-    const toSave = updated.map(item => ({ name: item.name }));
+    // Save metadata with URL or name
+    const toSave = updated.map(item => ({ name: item.name, url: item.url }));
     localStorage.setItem('custom-pdf-list', JSON.stringify(toSave));
 
     // Open uploaded file directly
@@ -152,7 +158,9 @@ export default function App() {
 
   // Open PDF Reader
   const openPdfReader = (pdf?: { name: string; url?: string }) => {
-    setSelectedPdf(pdf || pdfList[0]);
+    const target = pdf || pdfList[0] || defaultPdfs[0];
+    const pdfUrl = target.url || `/${target.name}`;
+    setSelectedPdf({ ...target, url: pdfUrl });
     setIsPdfModalOpen(true);
   };
 
@@ -329,12 +337,24 @@ export default function App() {
                 <FileText className="text-orange-500" size={24} />
                 <h3 className="text-xl font-bold m-0">Lettore PDF: {selectedPdf?.name || 'Documento'}</h3>
               </div>
-              <button
-                onClick={() => setIsPdfModalOpen(false)}
-                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-600 transition"
-              >
-                <X size={20} />
-              </button>
+              <div className="flex items-center gap-2">
+                {selectedPdf?.url && (
+                  <a
+                    href={selectedPdf.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs bg-orange-100 hover:bg-orange-200 text-orange-800 px-3 py-1.5 rounded-lg font-sans font-semibold transition"
+                  >
+                    Apri in nuova scheda ↗
+                  </a>
+                )}
+                <button
+                  onClick={() => setIsPdfModalOpen(false)}
+                  className="p-1.5 rounded-full hover:bg-gray-100 text-gray-600 transition"
+                >
+                  <X size={20} />
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 min-h-[400px] bg-slate-100 rounded-xl p-4 flex flex-col items-center justify-center text-center">
