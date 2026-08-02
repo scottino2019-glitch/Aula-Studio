@@ -16,7 +16,7 @@ export default function App() {
   // PDF Library State
   const defaultPdfs = [
     { name: 'Atena_Grammatica.pdf', url: '/Atena_Grammatica.pdf' },
-    { name: 'chinese-per-i-bambini.pdf', url: '/chinese.pdf' },
+    { name: 'chinese-per-i-bambini.pdf', url: '/chinese-per-i-bambini.pdf' },
   ];
 
   const [pdfList, setPdfList] = useState<Array<{ name: string; url?: string }>>(defaultPdfs);
@@ -185,6 +185,7 @@ export default function App() {
   };
 
   const apps = [
+    { title: 'Brutal Lab', icon: '⚡', href: 'brutal-lab.html' },
     { title: 'Esercizi', icon: '📝', href: 'quiz-cinese_app.html' },
     { title: 'Lezioni', icon: '🎥', href: 'hub_lezione.html' },
     { title: 'Vocabolario', icon: '📖', href: 'vocabolario-creator.html' },
@@ -353,7 +354,7 @@ export default function App() {
       {/* Embedded Sub-App Viewer Modal */}
       {activeAppLink && (
         <div className="modal-overlay" onClick={() => setActiveAppLink(null)}>
-          <div className="modal-content" style={{ width: '950px', height: '85vh' }} onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" style={{ width: '100%', maxWidth: '950px', height: '85vh', maxHeight: '90vh' }} onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b pb-3 mb-3">
               <div className="flex items-center gap-2">
                 <Globe className="text-pink-500" size={22} />

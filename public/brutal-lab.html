@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BRUTAL.LAB - Creative Hub 13 App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background-color: #F3F0E8;
+      color: #000;
+      padding: 12px;
+      min-height: 100vh;
+    }
+    @media (min-width: 640px) {
+      body { padding: 24px; }
+    }
+    .wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      border: 4px solid #000;
+      background: #FFF;
+      box-shadow: 6px 6px 0px #000;
+      width: 100%;
+    }
+    @media (min-width: 640px) {
+      .wrapper { box-shadow: 8px 8px 0px #000; }
+    }
+    header {
+      border-bottom: 4px solid #000;
+      padding: 16px;
+      background: #FFE500;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .logo-box {
+      font-size: 1.5rem;
+      font-weight: 900;
+      border: 4px solid #000;
+      padding: 6px 14px;
+      background: #FFF;
+      transform: rotate(-2deg);
+      box-shadow: 4px 4px 0px #000;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-btn {
+      border: 2px solid #000;
+      padding: 6px 12px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: none;
+      color: #000;
+      box-shadow: 2px 2px 0px #000;
+      transition: all 0.15s ease;
+      display: inline-block;
+    }
+    .nav-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0px #000;
+    }
+    .btn-pink { background: #F300FF; color: #FFF; }
+    .btn-pink:hover { background: #FFF; color: #000; }
+    .btn-green { background: #00FF66; }
+    .btn-green:hover { background: #000; color: #FFF; }
+    .btn-white { background: #FFF; }
+    .btn-white:hover { background: #000; color: #FFF; }
+
+    /* Hero Section */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr;
+      border-bottom: 4px solid #000;
+    }
+    @media (min-width: 900px) {
+      .hero { grid-template-columns: 7fr 5fr; }
+    }
+    .hero-left {
+      padding: 24px;
+      border-bottom: 4px solid #000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    @media (min-width: 900px) {
+      .hero-left {
+        padding: 40px;
+        border-bottom: none;
+        border-right: 4px solid #000;
+      }
+    }
+    .badge {
+      display: inline-block;
+      background: #00E0FF;
+      border: 2px solid #000;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      transform: rotate(1deg);
+      box-shadow: 2px 2px 0px #000;
+      margin-bottom: 16px;
+      width: fit-content;
+    }
+    .hero-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      line-height: 1.1;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+    @media (min-width: 640px) {
+      .hero-title { font-size: 3.2rem; }
+    }
+    .highlight {
+      background: #FFE500;
+      padding: 2px 8px;
+      border: 2px solid #000;
+      display: inline-block;
+      transform: rotate(-1deg);
+    }
+    .hero-desc {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.5;
+      color: #222;
+      margin-bottom: 24px;
+      max-width: 550px;
+    }
+    .hero-right {
+      background: #00FF66;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 220px;
+      position: relative;
+      overflow: hidden;
+    }
+    .bento-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      border: 4px solid #000;
+      padding: 12px;
+      background: #FFF;
+      transform: rotate(3deg);
+      box-shadow: 4px 4px 0px #000;
+      width: fit-content;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Grid Section */
+    .grid-section {
+      padding: 20px;
+      background: #FFF;
+    }
+    @media (min-width: 640px) {
+      .grid-section { padding: 36px; }
+    }
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 4px solid #000;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      background: #00E0FF;
+      padding: 4px 12px;
+      border: 2px solid #000;
+      transform: rotate(-1deg);
+      box-shadow: 3px 3px 0px #000;
+    }
+    @media (min-width: 640px) {
+      .section-title { font-size: 2rem; }
+    }
+    .apps-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 600px) {
+      .apps-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    }
+    @media (min-width: 960px) {
+      .apps-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    }
+
+    /* App Cards */
+    .app-card {
+      border: 4px solid #000;
+      background: #FFF;
+      box-shadow: 4px 4px 0px #000;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-decoration: none;
+      color: #000;
+    }
+    .app-card:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 7px 7px 0px #000;
+    }
+    .card-head {
+      border-bottom: 4px solid #000;
+      padding: 12px;
+      font-weight: 900;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .c-yellow { background: #FFE500; }
+    .c-green { background: #00FF66; }
+    .c-cyan { background: #00E0FF; }
+    .c-pink { background: #F300FF; color: #FFF; }
+    .card-tag {
+      background: #FFF;
+      color: #000;
+      border: 2px solid #000;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      font-weight: 900;
+      border-radius: 0;
+    }
+    .card-body {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card-desc {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+    .card-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 900;
+    }
+    .badge-pill {
+      border: 2px solid #000;
+      padding: 2px 6px;
+      font-size: 0.7rem;
+    }
+
+    /* Edit Links Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 999;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    .modal-content {
+      max-width: 650px;
+      margin: 40px auto;
+      background: #FFF;
+      border: 4px solid #000;
+      box-shadow: 8px 8px 0px #000;
+      padding: 20px;
+    }
+
+    footer {
+      border-top: 4px solid #000;
+      padding: 32px 16px;
+      background: #F300FF;
+      color: #FFF;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <!-- Header -->
+    <header>
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <button onclick="window.history.length > 1 ? window.history.back() : window.close()" class="nav-btn btn-white">
+          ← HOME APP
+        </button>
+        <div class="logo-box">
+          BRUTAL.LAB ⚡
+        </div>
+      </div>
+      <nav style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button onclick="openEditorModal()" class="nav-btn btn-pink">
+          ⚙️ MODIFICA 13 LINK
+        </button>
+        <a href="#progetti" class="nav-btn btn-green">
+          13 APPLICAZIONI
+        </a>
+      </nav>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-left">
+        <span class="badge">HUB EDITABILE • DESIGN NEOBRUTALISTA</span>
+        <h1 class="hero-title">
+          13 App Esterne<br>
+          <span class="highlight">Responsive</span> & Dirette.
+        </h1>
+        <p class="hero-desc">
+          Seleziona una delle tue 13 applicazioni. Ogni pulsante si apre in una nuova finestra diretta. Puoi personalizzare tutti e 13 i link ed i titoli con il pulsante in alto "⚙️ MODIFICA 13 LINK"!
+        </p>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <a href="#progetti" class="nav-btn btn-pink" style="padding: 12px 20px; font-size: 1rem;">
+            VEDI LE 13 APP ↓
+          </a>
+        </div>
+      </div>
+      
+      <div class="hero-right">
+        <div class="bento-title">
+          100% RESPONSIVE
+        </div>
+        <div style="background: #FFF; border: 2px solid #000; padding: 12px; transform: rotate(-2deg); box-shadow: 3px 3px 0px #000; margin-top: 16px;">
+          <p style="font-weight: 900; color: #F300FF;">STILE NEOBRUTALISTA:</p>
+          <p style="font-size: 0.85rem; font-weight: 700; margin-top: 4px;">Adattato per smartphone, tablet e PC senza perdere bordi e contrasto!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13 Apps Section -->
+    <section id="progetti" class="grid-section">
+      <div class="section-header">
+        <h2 class="section-title">13 APPLICAZIONI ESTERNE 🚀</h2>
+        <span style="background: #FFE500; border: 2px solid #000; font-weight: 900; font-size: 0.75rem; padding: 4px 8px; box-shadow: 2px 2px 0px #000;">
+          LINK ESTERNI ATTIVI
+        </span>
+      </div>
+
+      <!-- Container built dynamically via JS -->
+      <div id="apps-container" class="apps-grid"></div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <h2 style="font-size: 2rem; font-weight: 900; text-transform: uppercase; background: #000; color: #FFE500; display: inline-block; padding: 6px 16px; border: 2px solid #FFF; transform: rotate(-1deg); margin-bottom: 16px;">
+        BRUTAL CREATIVE LAB
+      </h2>
+      <p style="font-weight: 700; margin-bottom: 20px; max-width: 500px; margin-left: auto; margin-right: auto;">
+        Design ad alto contrasto per le tue 13 applicazioni.
+      </p>
+      <button onclick="window.history.length > 1 ? window.history.back() : window.close()" class="nav-btn btn-white" style="padding: 12px 24px; font-size: 1rem;">
+        ← TORNA ALLA STUDIO HOME
+      </button>
+    </footer>
+  </div>
+
+  <!-- Modal for Editing Links -->
+  <div id="editor-modal" class="modal">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #000; padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 style="font-size: 1.3rem; font-weight: 900;">⚙️ Modifica i Link delle 13 App</h3>
+        <button onclick="closeEditorModal()" class="nav-btn btn-pink" style="padding: 4px 10px;">✕ CHIUDI</button>
+      </div>
+      <p style="font-size: 0.85rem; font-weight: 700; margin-bottom: 16px; background: #FFE500; border: 2px solid #000; padding: 8px;">
+        Inserisci i tuoi indirizzi URL reali ed i nomi per ciascuna delle 13 applicazioni. Verranno salvati automaticamente nel tuo browser!
+      </p>
+
+      <div id="modal-inputs" style="max-height: 50vh; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; gap: 12px;">
+      </div>
+
+      <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+        <button onclick="resetDefaultApps()" class="nav-btn btn-white">RIPRISTINA DEFAULT</button>
+        <button onclick="saveCustomApps()" class="nav-btn btn-green" style="padding: 8px 16px; font-size: 1rem;">💾 SALVA MODIFICHE</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Default 13 Applications Data
+    const defaultApps = [
+      { id: 1, title: 'GrammarForge', url: 'https://scottino2019-glitch.github.io/GrammarForge/', desc: 'Piattaforma avanzata per la creazione e studio della grammatica.', bg: 'c-yellow', platform: 'GLITCH.IO' },
+      { id: 2, title: 'LinguistBook', url: 'https://linguistbook.netlify.app/', desc: 'Libro di linguistica e dizionario interattivo multitarget.', bg: 'c-green', platform: 'NETLIFY' },
+      { id: 3, title: 'LinguaCraft', url: 'https://lesson-creator.netlify.app/', desc: 'Lesson Creator per costruire lezioni ed esercizi personalizzati.', bg: 'c-cyan', platform: 'NETLIFY' },
+      { id: 4, title: 'Grammar Creator', url: 'https://grammar-creator.vercel.app/', desc: 'Generatore e visualizzatore schemi grammaticali.', bg: 'c-pink', platform: 'VERCEL' },
+      { id: 5, title: 'Quiz Cinese', url: 'quiz-cinese_app.html', desc: 'Modulo di esercizi interattivi, toni e quiz di cinese.', bg: 'c-yellow', platform: 'LOCAL' },
+      { id: 6, title: 'Hub Lezioni', url: 'hub_lezione.html', desc: 'Centro di raccolta videolezioni e registrazioni di studio.', bg: 'c-green', platform: 'LOCAL' },
+      { id: 7, title: 'Vocabolario Creator', url: 'vocabolario-creator.html', desc: 'Crea ed organizza liste di vocaboli personalizzate.', bg: 'c-cyan', platform: 'LOCAL' },
+      { id: 8, title: 'Editor Lingue', url: 'lingueEditor.html', desc: 'Editor di testo speciale per annotazioni fonetiche e Hanzi.', bg: 'c-yellow', platform: 'LOCAL' },
+      { id: 9, title: 'App Builder', url: 'builder.html', desc: 'Costruttore rapido di schede ed esercizi visuali.', bg: 'c-green', platform: 'LOCAL' },
+      { id: 10, title: 'Mappe Mentali', url: 'mappe.html', desc: 'Mappe concettuali e schemi visuali di studio.', bg: 'c-cyan', platform: 'LOCAL' },
+      { id: 11, title: 'Libro Esercizi', url: 'libro-esercizi.html', desc: 'Raccolta completa di test e quiz di ripasso.', bg: 'c-pink', platform: 'LOCAL' },
+      { id: 12, title: 'Libro Cultura', url: 'libro-cultura.html', desc: 'Approfondimenti culturali, tradizioni e storia.', bg: 'c-yellow', platform: 'LOCAL' },
+      { id: 13, title: 'FlashCard & Video', url: 'flashcard-video.html', desc: 'Flashcard interattive con supporto multimediale video.', bg: 'c-green', platform: 'LOCAL' }
+    ];
+
+    function getApps() {
+      const saved = localStorage.getItem('brutal_lab_13_apps');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length === 13) {
+            return parsed;
+          }
+        } catch(e) {}
+      }
+      return defaultApps;
+    }
+
+    function renderApps() {
+      const apps = getApps();
+      const container = document.getElementById('apps-container');
+      container.innerHTML = '';
+
+      apps.forEach((app, idx) => {
+        const card = document.createElement('a');
+        card.href = app.url;
+        card.target = '_blank';
+        card.rel = 'noopener noreferrer';
+        card.className = 'app-card';
+
+        const numStr = (idx + 1).toString().padStart(2, '0');
+
+        card.innerHTML = `
+          <div class="card-head ${app.bg || 'c-yellow'}">
+            <span>${numStr} / ${app.title.toUpperCase()}</span>
+            <span class="card-tag">APRI ↗</span>
+          </div>
+          <div class="card-body">
+            <p class="card-desc">${app.desc || 'Applicazione esterna dedicata.'}</p>
+            <div class="card-foot">
+              <span class="badge-pill" style="background: #FFF; font-weight: 900;">${app.platform || 'ESTERA'}</span>
+              <span style="text-decoration: underline; color: #000;">VAI ALL'APP →</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function openEditorModal() {
+      const apps = getApps();
+      const container = document.getElementById('modal-inputs');
+      container.innerHTML = '';
+
+      apps.forEach((app, idx) => {
+        const item = document.createElement('div');
+        item.style.cssText = 'border: 2px solid #000; padding: 10px; background: #F9F9F9;';
+        item.innerHTML = `
+          <div style="font-weight: 900; font-size: 0.85rem; margin-bottom: 6px;">App #${idx + 1}</div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
+            <input type="text" id="app-title-${idx}" value="${app.title}" placeholder="Nome App" style="flex: 1; border: 2px solid #000; padding: 6px; font-weight: 700; font-family: inherit;">
+            <input type="text" id="app-plat-${idx}" value="${app.platform || 'ESTERA'}" placeholder="Tag (es. GLITCH, VERCEL)" style="width: 120px; border: 2px solid #000; padding: 6px; font-weight: 700; font-family: inherit;">
+          </div>
+          <input type="text" id="app-url-${idx}" value="${app.url}" placeholder="URL Completo (https://...)" style="width: 100%; border: 2px solid #000; padding: 6px; font-weight: 700; font-family: inherit;">
+        `;
+        container.appendChild(item);
+      });
+
+      document.getElementById('editor-modal').style.display = 'block';
+    }
+
+    function closeEditorModal() {
+      document.getElementById('editor-modal').style.display = 'none';
+    }
+
+    function saveCustomApps() {
+      const apps = getApps();
+      for (let i = 0; i < 13; i++) {
+        const titleEl = document.getElementById(`app-title-${i}`);
+        const urlEl = document.getElementById(`app-url-${i}`);
+        const platEl = document.getElementById(`app-plat-${i}`);
+        if (titleEl && urlEl) {
+          apps[i].title = titleEl.value.trim() || `App #${i+1}`;
+          apps[i].url = urlEl.value.trim() || '#';
+          apps[i].platform = platEl ? platEl.value.trim() : 'ESTERA';
+        }
+      }
+      localStorage.setItem('brutal_lab_13_apps', JSON.stringify(apps));
+      closeEditorModal();
+      renderApps();
+    }
+
+    function resetDefaultApps() {
+      if (confirm('Vuoi ripristinare i link predefiniti per le 13 app?')) {
+        localStorage.removeItem('brutal_lab_13_apps');
+        closeEditorModal();
+        renderApps();
+      }
+    }
+
+    // Initialize
+    renderApps();
+  </script>
+</body>
+</html>
