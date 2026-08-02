@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Download, Upload, FileText, X, Globe, Wifi, WifiOff, CheckCircle2, Plus } from 'lucide-react';
-import { PdfViewer } from './components/PdfViewer';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -16,7 +15,7 @@ export default function App() {
   // PDF Library State
   const defaultPdfs = [
     { name: 'Atena_Grammatica.pdf', url: '/Atena_Grammatica.pdf' },
-    { name: 'chinese-per-i-bambini.pdf', url: '/chinese.pdf' },
+    { name: 'chinese-per-i-bambini.pdf', url: '/chinese-per-i-bambini.pdf' },
   ];
 
   const [pdfList, setPdfList] = useState<Array<{ name: string; url?: string }>>(defaultPdfs);
@@ -144,33 +143,22 @@ export default function App() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const buffer = event.target?.result as ArrayBuffer;
-      const fileUrl = URL.createObjectURL(file);
-      const newItem = { name: file.name, url: fileUrl };
-      const updated = [newItem, ...pdfList];
-      setPdfList(updated);
-      
-      // Save metadata with name
-      const toSave = updated.map(item => ({ name: item.name }));
-      localStorage.setItem('custom-pdf-list', JSON.stringify(toSave));
+    const fileUrl = URL.createObjectURL(file);
+    const newItem = { name: file.name, url: fileUrl };
+    const updated = [newItem, ...pdfList];
+    setPdfList(updated);
+    
+    // Save metadata with name
+    const toSave = updated.map(item => ({ name: item.name }));
+    localStorage.setItem('custom-pdf-list', JSON.stringify(toSave));
 
-      // Open uploaded file directly in canvas viewer
-      setSelectedPdf(newItem);
-      setSelectedPdfData(buffer);
-      setIsPdfModalOpen(true);
-    };
-    reader.readAsArrayBuffer(file);
+    // Open lightweight Biblioteca page
+    setActiveAppLink({ title: 'Biblioteca PDF', url: 'biblioteca.html' });
   };
 
   // Open PDF Reader
   const openPdfReader = (pdf?: { name: string; url?: string }) => {
-    const target = pdf || pdfList[0] || defaultPdfs[0];
-    const pdfUrl = target.url || `/${target.name}`;
-    setSelectedPdf({ ...target, url: pdfUrl });
-    setSelectedPdfData(undefined);
-    setIsPdfModalOpen(true);
+    setActiveAppLink({ title: 'Biblioteca PDF', url: 'biblioteca.html' });
   };
 
   // App Link Click Handler
@@ -185,19 +173,20 @@ export default function App() {
   };
 
   const apps = [
+    { title: 'Biblioteca', icon: '📖', href: 'biblioteca.html' },
     { title: 'Brutal Lab', icon: '⚡', href: 'brutal-lab.html' },
     { title: 'Esercizi', icon: '📝', href: 'quiz-cinese_app.html' },
     { title: 'Lezioni', icon: '🎥', href: 'hub_lezione.html' },
-    { title: 'Vocabolario', icon: '📖', href: 'vocabolario-creator.html' },
+    { title: 'Vocabolario', icon: '📚', href: 'vocabolario-creator.html' },
     { title: 'Editor', icon: '✍️', href: 'lingueEditor.html' },
     { title: 'Builder', icon: '🛠️', href: 'builder.html' },
-    { title: 'Gramm.', icon: '📚', href: 'https://grammar-creator.vercel.app/' },
+    { title: 'Gramm.', icon: '📘', href: 'https://grammar-creator.vercel.app/' },
     { title: 'Mappe', icon: '🗺️', href: 'mappe.html' },
     { title: 'Libro Es.', icon: '🎓', href: 'libro-esercizi.html' },
     { title: 'Cultura', icon: '🌍', href: 'libro-cultura.html' },
     { title: 'Libro Lez.', icon: '📓', href: 'libro-lingue.html' },
     { title: 'FlashCard', icon: '🧧', href: 'flashcard-video.html' },
-    { title: 'Gramm2', icon: '📖', href: 'https://scottino2019-glitch.github.io/GrammarForge/' },
+    { title: 'Gramm2', icon: '📗', href: 'https://scottino2019-glitch.github.io/GrammarForge/' },
     { title: 'LinguistBook', icon: '🌎', href: 'https://linguistbook.netlify.app/' },
     { title: 'LinguaCraft', icon: '🌏', href: 'https://lesson-creator.netlify.app/' },
   ];
@@ -337,19 +326,6 @@ export default function App() {
           </div>
         </div>
       </div>
-
-      {/* PDF Canvas Reader (In-App, No Download) */}
-      {isPdfModalOpen && selectedPdf && (
-        <PdfViewer
-          url={selectedPdf.url}
-          fileData={selectedPdfData}
-          title={selectedPdf.name}
-          onClose={() => {
-            setIsPdfModalOpen(false);
-            setSelectedPdfData(undefined);
-          }}
-        />
-      )}
 
       {/* Embedded Sub-App Viewer Modal */}
       {activeAppLink && (
