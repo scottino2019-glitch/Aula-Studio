@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LanguageBuilder - Crea il tuo sito di lingue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .dragging { opacity: 0.5; }
+        .drop-zone { border: 2px dashed #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        .element-hover { outline: 2px solid #3b82f6; outline-offset: 2px; }
+        .flag { font-size: 1.5em; }
+        .flip-card { perspective: 1000px; }
+        .flip-card-inner { transition: transform 0.6s; transform-style: preserve-3d; }
+        .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { backface-visibility: hidden; }
+        .flip-card-back { transform: rotateY(180deg); }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="flex items-center justify-between px-6 py-4">
+            <h1 class="text-2xl font-bold text-gray-800">🌍 LanguageBuilder</h1>
+            <div class="flex gap-3">
+                <button onclick="previewSite()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    👁️ Anteprima
+                </button>
+                <button onclick="exportSite()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                    💾 Esporta
+                </button>
+                <button onclick="clearAll()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                    🗑️ Pulisci Tutto
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex h-screen">
+        <!-- Sidebar con elementi -->
+        <div class="w-80 bg-white shadow-lg border-r overflow-y-auto">
+            <div class="p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">🧩 Elementi Linguistici</h2>
+                
+                <!-- Selezione Lingue -->
+                <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3">🌍 Lingue del Corso</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs text-gray-600 mb-1 block">Lingua di partenza:</label>
+                            <select id="source-language" onchange="updateLanguages()" class="w-full p-2 border rounded-lg text-sm">
+                                <option value="it">🇮🇹 Italiano</option>
+                                <option value="en">🇬🇧 Inglese</option>
+                                <option value="es">🇪🇸 Spagnolo</option>
+                                <option value="fr">🇫🇷 Francese</option>
+                                <option value="de">🇩🇪 Tedesco</option>
+                                <option value="pt">🇵🇹 Portoghese</option>
+                                <option value="ru">🇷🇺 Russo</option>
+                                <option value="zh">🇨🇳 Cinese</option>
+                                <option value="ja">🇯🇵 Giapponese</option>
+                                <option value="ar">🇸🇦 Arabo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-600 mb-1 block">Lingua da imparare:</label>
+                            <select id="target-language" onchange="updateLanguages()" class="w-full p-2 border rounded-lg text-sm">
+                                <option value="en">🇬🇧 Inglese</option>
+                                <option value="it">🇮🇹 Italiano</option>
+                                <option value="es">🇪🇸 Spagnolo</option>
+                                <option value="fr">🇫🇷 Francese</option>
+                                <option value="de">🇩🇪 Tedesco</option>
+                                <option value="pt">🇵🇹 Portoghese</option>
+                                <option value="ru">🇷🇺 Russo</option>
+                                <option value="zh">🇨🇳 Cinese</option>
+                                <option value="ja">🇯🇵 Giapponese</option>
+                                <option value="ar">🇸🇦 Arabo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtro per livelli -->
+                <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3">🎯 Filtra per Livello</h3>
+                    <select id="level-filter" onchange="filterByLevel()" class="w-full p-2 border rounded-lg text-sm">
+                        <option value="all">Tutti i Livelli</option>
+                        <option value="A1">A1 - Principiante</option>
+                        <option value="A2">A2 - Elementare</option>
+                        <option value="B1">B1 - Intermedio</option>
+                        <option value="B2">B2 - Intermedio+</option>
+                        <option value="C1">C1 - Avanzato</option>
+                        <option value="C2">C2 - Madrelingua</option>
+                    </select>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="bg-blue-50 p-3 rounded-lg border-2 border-dashed border-blue-300 cursor-move hover:border-blue-400 transition-colors" 
+                         draggable="true" ondragstart="dragStart(event)" data-type="language-header">
+                        <div class="text-sm font-medium text-blue-700">🌍 Header Lingua</div>
+                        <div class="text-xs text-blue-500">Intestazione con bandiere</div>
+                    </div>
+
+                    <div class="bg-green-50 p-3 rounded-lg border-2 border-dashed border-green-300 cursor-move hover:border-green-400 transition-colors element-item" 
+                         draggable="true" ondragstart="dragStart(event)" data-type="vocab-card" data-levels="A1,A2,B1">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="text-sm font-medium text-green-700">📚 Scheda Vocabolario</div>
+                            <div class="flex gap-1">
+                                <span class="text-xs bg-green-200 text-green-800 px-1 rounded">A1</span>
+                                <span class="text-xs bg-green-200 text-green-800 px-1 rounded">A2</span>
+                                <span class="text-xs bg-yellow-200 text-yellow-800 px-1 rounded">B1</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-green-500">Card con parola e traduzione</div>
+                    </div>
+
+                    <div class="bg-purple-50 p-3 rounded-lg border-2 border-dashed border-purple-300 cursor-move hover:border-purple-400 transition-colors element-item" 
+                         draggable="true" ondragstart="dragStart(event)" data-type="grammar-section" data-levels="A2,B1,B2">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="text-sm font-medium text-purple-700">📖 Sezione Grammatica</div>
+                            <div class="flex gap-1">
+                                <span class="text-xs bg-green-200 text-green-800 px-1 rounded">A2</span>
+                                <span class="text-xs bg-yellow-200 text-yellow-800 px-1 rounded">B1</span>
+                                <span class="text-xs bg-yellow-200 text-yellow-800 px-1 rounded">B2</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-purple-500">Regole e spiegazioni</div>
+                    </div>
+
+                    <div class="bg-yellow-50 p-3 rounded-lg border-2 border-dashed border-yellow-300 cursor-move hover:border-yellow-400 transition-colors element-item" 
+                         draggable="true" ondragstart="dragStart(event)" data-type="pronunciation-guide" data-levels="A1,A2">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="text-sm font-medium text-yellow-700">🔊 Guida Pronuncia</div>
+                            <div class="flex gap-1">
+                                <span class="text-xs bg-green-200 text-green-800 px-1 rounded">A1</span>
+                                <span class="text-xs bg-green-200 text-green-800 px-1 rounded">A2</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-yellow-500">Fonetica e audio</div>
+                    </div>
+
+                    <div class="bg-indigo-50 p-3 rounded-lg border-2 border-dashed border-indigo-300 cursor-move hover:border-indigo-400 transition-colors element-item" 
+                         draggable="true" ondragstart="dragStart(event)" data-type="exercise-quiz" data-levels="A1,A2,B1,B2">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="text-sm font-medium text-indigo-700">❓ Quiz Esercizi</div>
+                            <div class="flex gap-1">
+                                <span class="text-xs bg-green-200 text-green-800 px-1 rounded">A1</span>
+                                <span class="text-xs bg-green-200 text-green-800 px-1 rounded">A2</span>
+                                <span class="text-xs bg-yellow-200 text-yellow-800 px-1 rounded">B1</span>
+                                <span class="text-xs bg-yellow-200 text-yellow-800 px-1 rounded">B2</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-indigo-500">Domande interattive</div>
+                    </div>
+
+                    <div class="bg-red-50 p-3 rounded-lg border-2 border-dashed border-red-300 cursor-move hover:border-red-400 transition-colors element-item" 
+                         draggable="true" ondragstart="dragStart(event)" data-type="progress-tracker" data-levels="A1,A2,B1,B2,C1,C2">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="text-sm font-medium text-red-700">📈 Tracker Progressi</div>
+                            <div class="flex gap-1">
+                                <span class="text-xs bg-gray-200 text-gray-800 px-1 rounded">Tutti</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-red-500">Livello e avanzamento</div>
+                    </div>
+
+                    <div class="bg-teal-50 p-3 rounded-lg border-2 border-dashed border-teal-300 cursor-move hover:border-teal-400 transition-colors element-item" 
+                         draggable="true" ondragstart="dragStart(event)" data-type="phrase-book" data-levels="A2,B1,B2">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="text-sm font-medium text-teal-700">💬 Frasario</div>
+                            <div class="flex gap-1">
+                                <span class="text-xs bg-green-200 text-green-800 px-1 rounded">A2</span>
+                                <span class="text-xs bg-yellow-200 text-yellow-800 px-1 rounded">B1</span>
+                                <span class="text-xs bg-yellow-200 text-yellow-800 px-1 rounded">B2</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-teal-500">Frasi utili per situazioni</div>
+                    </div>
+
+                    <div class="bg-orange-50 p-3 rounded-lg border-2 border-dashed border-orange-300 cursor-move hover:border-orange-400 transition-colors element-item" 
+                         draggable="true" ondragstart="dragStart(event)" data-type="conjugation-table" data-levels="B1,B2,C1">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="text-sm font-medium text-orange-700">🔄 Tabella Coniugazioni</div>
+                            <div class="flex gap-1">
+                                <span class="text-xs bg-yellow-200 text-yellow-800 px-1 rounded">B1</span>
+                                <span class="text-xs bg-yellow-200 text-yellow-800 px-1 rounded">B2</span>
+                                <span class="text-xs bg-red-200 text-red-800 px-1 rounded">C1</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-orange-500">Verbi e tempi</div>
+                    </div>
+
+                    <div class="bg-pink-50 p-3 rounded-lg border-2 border-dashed border-pink-300 cursor-move hover:border-pink-400 transition-colors element-item" 
+                         draggable="true" ondragstart="dragStart(event)" data-type="cultural-notes" data-levels="B2,C1,C2">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="text-sm font-medium text-pink-700">🏛️ Note Culturali</div>
+                            <div class="flex gap-1">
+                                <span class="text-xs bg-yellow-200 text-yellow-800 px-1 rounded">B2</span>
+                                <span class="text-xs bg-red-200 text-red-800 px-1 rounded">C1</span>
+                                <span class="text-xs bg-red-200 text-red-800 px-1 rounded">C2</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-pink-500">Contesto e tradizioni</div>
+                    </div>
+
+                    <div class="bg-cyan-50 p-3 rounded-lg border-2 border-dashed border-cyan-300 cursor-move hover:border-cyan-400 transition-colors element-item" 
+                         draggable="true" ondragstart="dragStart(event)" data-type="level-selector" data-levels="A1,A2,B1,B2,C1,C2">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="text-sm font-medium text-cyan-700">🎯 Selettore Livello</div>
+                            <div class="flex gap-1">
+                                <span class="text-xs bg-gray-200 text-gray-800 px-1 rounded">Tutti</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-cyan-500">A1, A2, B1, B2, C1, C2</div>
+                    </div>
+
+                    <div class="bg-lime-50 p-3 rounded-lg border-2 border-dashed border-lime-300 cursor-move hover:border-lime-400 transition-colors element-item" 
+                         draggable="true" ondragstart="dragStart(event)" data-type="daily-word" data-levels="A1,A2,B1,B2">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="text-sm font-medium text-lime-700">📅 Parola del Giorno</div>
+                            <div class="flex gap-1">
+                                <span class="text-xs bg-green-200 text-green-800 px-1 rounded">A1</span>
+                                <span class="text-xs bg-green-200 text-green-800 px-1 rounded">A2</span>
+                                <span class="text-xs bg-yellow-200 text-yellow-800 px-1 rounded">B1</span>
+                                <span class="text-xs bg-yellow-200 text-yellow-800 px-1 rounded">B2</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-lime-500">Vocabolario quotidiano</div>
+                    </div>
+
+                    <div class="bg-violet-50 p-3 rounded-lg border-2 border-dashed border-violet-300 cursor-move hover:border-violet-400 transition-colors element-item" 
+                         draggable="true" ondragstart="dragStart(event)" data-type="conversation-practice" data-levels="A2,B1,B2,C1">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="text-sm font-medium text-violet-700">💭 Pratica Conversazione</div>
+                            <div class="flex gap-1">
+                                <span class="text-xs bg-green-200 text-green-800 px-1 rounded">A2</span>
+                                <span class="text-xs bg-yellow-200 text-yellow-800 px-1 rounded">B1</span>
+                                <span class="text-xs bg-yellow-200 text-yellow-800 px-1 rounded">B2</span>
+                                <span class="text-xs bg-red-200 text-red-800 px-1 rounded">C1</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-violet-500">Dialoghi e scenari</div>
+                    </div>
+
+                    <div class="bg-emerald-50 p-3 rounded-lg border-2 border-dashed border-emerald-300 cursor-move hover:border-emerald-400 transition-colors element-item" 
+                         draggable="true" ondragstart="dragStart(event)" data-type="resources-links" data-levels="A1,A2,B1,B2,C1,C2">
+                        <div class="flex justify-between items-start mb-1">
+                            <div class="text-sm font-medium text-emerald-700">🔗 Risorse Utili</div>
+                            <div class="flex gap-1">
+                                <span class="text-xs bg-gray-200 text-gray-800 px-1 rounded">Tutti</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-emerald-500">Link e materiali</div>
+                    </div>
+                </div>
+
+                <!-- Pannello proprietà -->
+                <div id="properties-panel" class="mt-8 p-4 bg-blue-50 rounded-lg hidden">
+                    <h3 class="font-semibold text-gray-800 mb-3">⚙️ Proprietà</h3>
+                    <div id="properties-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Area di lavoro -->
+        <div class="flex-1 p-6">
+            <div class="bg-white rounded-lg shadow-lg h-full overflow-auto">
+                <div id="canvas" class="min-h-full p-8" 
+                     ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="text-center text-gray-400 py-20">
+                        <div class="text-6xl mb-4">🌍</div>
+                        <h3 class="text-xl font-medium mb-2">Crea il tuo sito per imparare le lingue</h3>
+                        <p>Trascina gli elementi per costruire lezioni e esercizi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Anteprima -->
+    <div id="preview-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center h-full p-4">
+            <div class="bg-white rounded-lg w-full max-w-4xl h-5/6 flex flex-col">
+                <div class="flex items-center justify-between p-4 border-b">
+                    <h3 class="text-lg font-semibold">👁️ Anteprima Sito Lingue</h3>
+                    <button onclick="closePreview()" class="text-gray-500 hover:text-gray-700">✕</button>
+                </div>
+                <div id="preview-content" class="flex-1 overflow-auto p-6"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let draggedElement = null;
+        let selectedElement = null;
+        let elementCounter = 0;
+        let currentSourceLang = 'it';
+        let currentTargetLang = 'en';
+
+        // Database multilingue per contenuti
+        const languageContent = {
+            // Vocabolario base per diverse combinazioni linguistiche
+            vocab: {
+                'it-en': { word: 'Ciao', translation: 'Hello', pronunciation: '/ˈtʃaʊ/' },
+                'it-es': { word: 'Ciao', translation: 'Hola', pronunciation: '/ˈtʃaʊ/' },
+                'it-fr': { word: 'Ciao', translation: 'Salut', pronunciation: '/ˈtʃaʊ/' },
+                'it-de': { word: 'Ciao', translation: 'Hallo', pronunciation: '/ˈtʃaʊ/' },
+                'en-it': { word: 'Hello', translation: 'Ciao', pronunciation: '/həˈloʊ/' },
+                'en-es': { word: 'Hello', translation: 'Hola', pronunciation: '/həˈloʊ/' },
+                'en-fr': { word: 'Hello', translation: 'Salut', pronunciation: '/həˈloʊ/' },
+                'en-de': { word: 'Hello', translation: 'Hallo', pronunciation: '/həˈloʊ/' },
+                'es-it': { word: 'Hola', translation: 'Ciao', pronunciation: '/ˈola/' },
+                'es-en': { word: 'Hola', translation: 'Hello', pronunciation: '/ˈola/' },
+                'fr-it': { word: 'Salut', translation: 'Ciao', pronunciation: '/saˈly/' },
+                'fr-en': { word: 'Salut', translation: 'Hello', pronunciation: '/saˈly/' },
+                'de-it': { word: 'Hallo', translation: 'Ciao', pronunciation: '/ˈhalo/' },
+                'de-en': { word: 'Hallo', translation: 'Hello', pronunciation: '/ˈhalo/' }
+            },
+            
+            // Frasi per frasario
+            phrases: {
+                'it-en': [
+                    { phrase: 'Vorrei prenotare un tavolo', translation: "I'd like to book a table" },
+                    { phrase: 'Il conto, per favore', translation: 'The bill, please' },
+                    { phrase: 'È molto buono!', translation: "It's very good!" }
+                ],
+                'it-es': [
+                    { phrase: 'Vorrei prenotare un tavolo', translation: 'Me gustaría reservar una mesa' },
+                    { phrase: 'Il conto, per favore', translation: 'La cuenta, por favor' },
+                    { phrase: 'È molto buono!', translation: '¡Está muy bueno!' }
+                ],
+                'en-it': [
+                    { phrase: "I'd like to book a table", translation: 'Vorrei prenotare un tavolo' },
+                    { phrase: 'The bill, please', translation: 'Il conto, per favore' },
+                    { phrase: "It's very good!", translation: 'È molto buono!' }
+                ],
+                'es-it': [
+                    { phrase: 'Me gustaría reservar una mesa', translation: 'Vorrei prenotare un tavolo' },
+                    { phrase: 'La cuenta, por favor', translation: 'Il conto, per favore' },
+                    { phrase: '¡Está muy bueno!', translation: 'È molto buono!' }
+                ]
+            },
+
+            // Quiz multilingue
+            quiz: {
+                'it-en': {
+                    question: 'Come si dice "Buongiorno" in inglese?',
+                    options: ['Good evening', 'Good morning', 'Good night'],
+                    correct: 1
+                },
+                'it-es': {
+                    question: 'Come si dice "Buongiorno" in spagnolo?',
+                    options: ['Buenas noches', 'Buenos días', 'Buenas tardes'],
+                    correct: 1
+                },
+                'en-it': {
+                    question: 'How do you say "Good morning" in Italian?',
+                    options: ['Buonasera', 'Buongiorno', 'Buonanotte'],
+                    correct: 1
+                },
+                'es-it': {
+                    question: '¿Cómo se dice "Buenos días" en italiano?',
+                    options: ['Buonasera', 'Buongiorno', 'Buonanotte'],
+                    correct: 1
+                }
+            },
+
+            // Nomi delle lingue
+            languageNames: {
+                'it': 'Italiano', 'en': 'Inglese', 'es': 'Spagnolo', 'fr': 'Francese',
+                'de': 'Tedesco', 'pt': 'Portoghese', 'ru': 'Russo', 'zh': 'Cinese',
+                'ja': 'Giapponese', 'ar': 'Arabo'
+            },
+
+            // Bandiere
+            flags: {
+                'it': '🇮🇹', 'en': '🇬🇧', 'es': '🇪🇸', 'fr': '🇫🇷', 'de': '🇩🇪',
+                'pt': '🇵🇹', 'ru': '🇷🇺', 'zh': '🇨🇳', 'ja': '🇯🇵', 'ar': '🇸🇦'
+            }
+        };
+
+        function updateLanguages() {
+            currentSourceLang = document.getElementById('source-language').value;
+            currentTargetLang = document.getElementById('target-language').value;
+            
+            // Aggiorna tutti gli elementi esistenti con le nuove lingue
+            updateExistingElements();
+        }
+
+        function updateExistingElements() {
+            const canvas = document.getElementById('canvas');
+            const elements = canvas.querySelectorAll('[id^="element-"]');
+            
+            elements.forEach(element => {
+                const elementType = getElementType(element);
+                if (elementType) {
+                    updateElementContent(element, elementType);
+                }
+            });
+        }
+
+        function getElementType(element) {
+            // Determina il tipo di elemento dal suo contenuto e struttura
+            if (element.querySelector('.flip-card')) return 'vocab-card';
+            if (element.textContent.includes('Quiz:') || element.querySelector('.quiz-option')) return 'exercise-quiz';
+            if (element.textContent.includes('Frasario:') || element.textContent.includes('💬')) return 'phrase-book';
+            if (element.textContent.includes('Pronuncia') || element.textContent.includes('🔊')) return 'pronunciation-guide';
+            if (element.textContent.includes('📖') && element.querySelector('h4')) return 'grammar-section';
+            if (element.textContent.includes('📅') && element.textContent.includes('Parola del Giorno')) return 'daily-word';
+            if (element.textContent.includes('🏛️') && element.textContent.includes('Nota Culturale')) return 'cultural-notes';
+            if (element.textContent.includes('🔄') && element.querySelector('table')) return 'conjugation-table';
+            if (element.textContent.includes('📈') && element.textContent.includes('Progressi')) return 'progress-tracker';
+            if (element.textContent.includes('🎯') && element.textContent.includes('Livello')) return 'level-selector';
+            if (element.textContent.includes('💭') && element.textContent.includes('Conversazione')) return 'conversation-practice';
+            if (element.textContent.includes('🔗') && element.textContent.includes('Risorse')) return 'resources-links';
+            if (element.textContent.includes('🌍') && element.textContent.includes('Impara')) return 'language-header';
+            return 'generic';
+        }
+
+        function updateElementContent(element, type) {
+            const langPair = `${currentSourceLang}-${currentTargetLang}`;
+            
+            switch(type) {
+                case 'vocab-card':
+                    updateVocabCard(element, langPair);
+                    break;
+                case 'exercise-quiz':
+                    updateQuiz(element, langPair);
+                    break;
+                case 'phrase-book':
+                    updatePhraseBook(element, langPair);
+                    break;
+                case 'pronunciation-guide':
+                    updatePronunciationGuide(element, langPair);
+                    break;
+            }
+        }
+
+        function updateVocabCard(element, langPair) {
+            const vocab = languageContent.vocab[langPair] || languageContent.vocab['it-en'];
+            const frontDiv = element.querySelector('.flip-card-front div');
+            const backDiv = element.querySelector('.flip-card-back div');
+            
+            if (frontDiv && backDiv) {
+                frontDiv.innerHTML = `
+                    <div class="text-3xl font-bold mb-2">${vocab.word}</div>
+                    <div class="text-sm opacity-80">${languageContent.languageNames[currentTargetLang]}</div>
+                `;
+                backDiv.innerHTML = `
+                    <div class="text-3xl font-bold mb-2">${vocab.translation}</div>
+                    <div class="text-sm opacity-80">${languageContent.languageNames[currentSourceLang]}</div>
+                `;
+            }
+        }
+
+        function updateQuiz(element, langPair) {
+            const quiz = languageContent.quiz[langPair] || languageContent.quiz['it-en'];
+            const questionP = element.querySelector('p');
+            const options = element.querySelectorAll('.quiz-option');
+            
+            if (questionP) {
+                questionP.textContent = quiz.question;
+            }
+            
+            options.forEach((option, index) => {
+                if (quiz.options[index]) {
+                    option.innerHTML = `${String.fromCharCode(65 + index)}) ${quiz.options[index]}`;
+                    option.dataset.answer = index === quiz.correct ? 'correct' : 'wrong';
+                }
+            });
+        }
+
+        function updatePhraseBook(element, langPair) {
+            const phrases = languageContent.phrases[langPair] || languageContent.phrases['it-en'];
+            const title = element.querySelector('h3');
+            const phraseContainer = element.querySelector('.space-y-3');
+            
+            if (title) {
+                title.textContent = `💬 Frasario: Al Ristorante (${languageContent.languageNames[currentSourceLang]} → ${languageContent.languageNames[currentTargetLang]})`;
+            }
+            
+            if (phraseContainer) {
+                phraseContainer.innerHTML = phrases.map(item => `
+                    <div class="bg-teal-50 p-3 rounded-lg">
+                        <div class="font-medium text-teal-800">${item.phrase}</div>
+                        <div class="text-sm text-teal-600">${item.translation}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function updatePronunciationGuide(element, langPair) {
+            const vocab = languageContent.vocab[langPair] || languageContent.vocab['it-en'];
+            const title = element.querySelector('h3');
+            
+            if (title) {
+                title.textContent = `🔊 Guida alla Pronuncia (${languageContent.languageNames[currentTargetLang]})`;
+            }
+        }
+
+        function dragStart(e) {
+            draggedElement = e.target.dataset.type;
+            e.target.classList.add('dragging');
+        }
+
+        function allowDrop(e) {
+            e.preventDefault();
+            const canvas = document.getElementById('canvas');
+            if (e.target === canvas || canvas.contains(e.target)) {
+                canvas.classList.add('drop-zone');
+            }
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            const canvas = document.getElementById('canvas');
+            canvas.classList.remove('drop-zone');
+            
+            if (draggedElement) {
+                createElement(draggedElement);
+                draggedElement = null;
+            }
+        }
+
+        function createElement(type) {
+            const canvas = document.getElementById('canvas');
+            const emptyMessage = canvas.querySelector('.text-center.text-gray-400');
+            if (emptyMessage) emptyMessage.remove();
+
+            elementCounter++;
+            const elementId = `element-${elementCounter}`;
+            let element;
+            const langPair = `${currentSourceLang}-${currentTargetLang}`;
+
+            switch(type) {
+                case 'language-header':
+                    element = document.createElement('div');
+                    element.className = 'bg-gradient-to-r from-blue-600 to-green-600 text-white p-12 text-center rounded-lg mb-8 cursor-pointer hover:from-blue-700 hover:to-green-700';
+                    element.innerHTML = `<div class="flex justify-center space-x-4 mb-4"><span class="flag">${languageContent.flags[currentSourceLang]}</span><span class="flag">${languageContent.flags[currentTargetLang]}</span></div><h1 class="text-5xl font-bold mb-4">🌍 Impara ${languageContent.languageNames[currentTargetLang]}</h1><p class="text-xl">Da ${languageContent.languageNames[currentSourceLang]} a ${languageContent.languageNames[currentTargetLang]}</p>`;
+                    break;
+                
+                case 'vocab-card':
+                    const vocab = languageContent.vocab[langPair] || languageContent.vocab['it-en'];
+                    element = document.createElement('div');
+                    element.className = 'flip-card w-full h-48 mb-4 cursor-pointer';
+                    element.innerHTML = `
+                        <div class="flip-card-inner relative w-full h-full">
+                            <div class="flip-card-front absolute w-full h-full bg-blue-500 text-white rounded-lg flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="text-3xl font-bold mb-2">${vocab.word}</div>
+                                    <div class="text-sm opacity-80">${languageContent.languageNames[currentTargetLang]}</div>
+                                </div>
+                            </div>
+                            <div class="flip-card-back absolute w-full h-full bg-green-500 text-white rounded-lg flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="text-3xl font-bold mb-2">${vocab.translation}</div>
+                                    <div class="text-sm opacity-80">${languageContent.languageNames[currentSourceLang]}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                
+                case 'grammar-section':
+                    element = document.createElement('div');
+                    element.className = 'bg-white border border-gray-200 rounded-lg p-6 shadow-md mb-6 cursor-pointer hover:shadow-lg transition-shadow';
+                    element.innerHTML = `
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">📖 Presente Indicativo</h3>
+                        <div class="bg-purple-50 p-4 rounded-lg mb-4">
+                            <h4 class="font-medium text-purple-800 mb-2">Regola:</h4>
+                            <p class="text-gray-700">Il presente indicativo si usa per azioni che avvengono nel momento presente.</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 p-3 rounded">
+                                <strong>Io parlo</strong> - I speak
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded">
+                                <strong>Tu parli</strong> - You speak
+                            </div>
+                        </div>
+                    `;
+                    break;
+                
+                case 'pronunciation-guide':
+                    const pronVocab = languageContent.vocab[langPair] || languageContent.vocab['it-en'];
+                    element = document.createElement('div');
+                    element.className = 'bg-white border border-gray-200 rounded-lg p-6 shadow-md mb-6 cursor-pointer hover:shadow-lg transition-shadow';
+                    element.innerHTML = `
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">🔊 Guida alla Pronuncia (${languageContent.languageNames[currentTargetLang]})</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between bg-yellow-50 p-4 rounded-lg">
+                                <div>
+                                    <div class="font-bold text-lg">${pronVocab.word}</div>
+                                    <div class="text-gray-600">${pronVocab.pronunciation}</div>
+                                </div>
+                                <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600" onclick="playPronunciation('${pronVocab.word.toLowerCase()}')">🔊 Ascolta</button>
+                            </div>
+                            <div class="flex items-center justify-between bg-yellow-50 p-4 rounded-lg">
+                                <div>
+                                    <div class="font-bold text-lg">${pronVocab.translation}</div>
+                                    <div class="text-gray-600">/traduzione/</div>
+                                </div>
+                                <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600" onclick="playPronunciation('${pronVocab.translation.toLowerCase()}')">🔊 Ascolta</button>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                
+                case 'exercise-quiz':
+                    const quiz = languageContent.quiz[langPair] || languageContent.quiz['it-en'];
+                    element = document.createElement('div');
+                    element.className = 'bg-white border border-gray-200 rounded-lg p-6 shadow-md mb-6 cursor-pointer hover:shadow-lg transition-shadow';
+                    element.innerHTML = `
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">❓ Quiz: Saluti (${languageContent.languageNames[currentSourceLang]} → ${languageContent.languageNames[currentTargetLang]})</h3>
+                        <div class="mb-4">
+                            <p class="text-gray-700 mb-3">${quiz.question}</p>
+                            <div class="space-y-2" data-quiz="greetings">
+                                ${quiz.options.map((option, index) => `
+                                    <button class="quiz-option w-full text-left p-3 bg-gray-50 rounded hover:bg-blue-50 border" data-answer="${index === quiz.correct ? 'correct' : 'wrong'}">${String.fromCharCode(65 + index)}) ${option}</button>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button class="verify-btn bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700" onclick="verifyQuizAnswer(this)">Verifica Risposta</button>
+                            <div class="quiz-result mt-3 hidden"></div>
+                        </div>
+                    `;
+                    break;
+                
+                case 'progress-tracker':
+                    element = document.createElement('div');
+                    element.className = 'bg-gradient-to-r from-red-400 to-pink-400 text-white p-6 rounded-lg mb-6 cursor-pointer hover:from-red-500 hover:to-pink-500 transition-colors';
+                    element.innerHTML = `
+                        <h3 class="text-lg font-semibold mb-4">📈 I Tuoi Progressi</h3>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold">A2</div>
+                                <div class="text-sm opacity-90">Livello Attuale</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold">347</div>
+                                <div class="text-sm opacity-90">Parole Imparate</div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Progresso verso B1</span>
+                                <span>68%</span>
+                            </div>
+                            <div class="w-full bg-red-300 rounded-full h-2">
+                                <div class="bg-white h-2 rounded-full" style="width: 68%"></div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                
+                case 'phrase-book':
+                    const phrases = languageContent.phrases[langPair] || languageContent.phrases['it-en'];
+                    element = document.createElement('div');
+                    element.className = 'bg-white border border-gray-200 rounded-lg p-6 shadow-md mb-6 cursor-pointer hover:shadow-lg transition-shadow';
+                    element.innerHTML = `
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">💬 Frasario: Al Ristorante (${languageContent.languageNames[currentSourceLang]} → ${languageContent.languageNames[currentTargetLang]})</h3>
+                        <div class="space-y-3">
+                            ${phrases.map(item => `
+                                <div class="bg-teal-50 p-3 rounded-lg">
+                                    <div class="font-medium text-teal-800">${item.phrase}</div>
+                                    <div class="text-sm text-teal-600">${item.translation}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    break;
+                
+                case 'conjugation-table':
+                    element = document.createElement('div');
+                    element.className = 'bg-white border border-gray-200 rounded-lg p-6 shadow-md mb-6 cursor-pointer hover:shadow-lg transition-shadow';
+                    element.innerHTML = `
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">🔄 Coniugazione: ESSERE</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full border-collapse">
+                                <thead>
+                                    <tr class="bg-orange-100">
+                                        <th class="border p-2 text-left">Persona</th>
+                                        <th class="border p-2 text-left">Presente</th>
+                                        <th class="border p-2 text-left">Passato</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td class="border p-2">Io</td><td class="border p-2">sono</td><td class="border p-2">ero</td></tr>
+                                    <tr><td class="border p-2">Tu</td><td class="border p-2">sei</td><td class="border p-2">eri</td></tr>
+                                    <tr><td class="border p-2">Lui/Lei</td><td class="border p-2">è</td><td class="border p-2">era</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    break;
+                
+                case 'cultural-notes':
+                    element = document.createElement('div');
+                    element.className = 'bg-gradient-to-r from-pink-100 to-purple-100 border border-pink-200 rounded-lg p-6 mb-6 cursor-pointer hover:from-pink-200 hover:to-purple-200 transition-colors';
+                    element.innerHTML = `
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">🏛️ Nota Culturale</h3>
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-medium text-pink-800 mb-2">Il Saluto Italiano</h4>
+                            <p class="text-gray-700 mb-3">In Italia, è comune salutare con due baci sulle guance, iniziando dalla guancia sinistra. Questo gesto varia da regione a regione.</p>
+                            <div class="text-sm text-pink-600">💡 Consiglio: Osserva sempre come si comportano i locali prima!</div>
+                        </div>
+                    `;
+                    break;
+                
+                case 'level-selector':
+                    element = document.createElement('div');
+                    element.className = 'bg-white border border-gray-200 rounded-lg p-6 shadow-md mb-6 cursor-pointer hover:shadow-lg transition-shadow';
+                    element.innerHTML = `
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">🎯 Seleziona il Tuo Livello</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <button class="bg-green-100 text-green-800 p-3 rounded-lg hover:bg-green-200 font-medium">A1 Principiante</button>
+                            <button class="bg-green-200 text-green-800 p-3 rounded-lg hover:bg-green-300 font-medium">A2 Elementare</button>
+                            <button class="bg-yellow-100 text-yellow-800 p-3 rounded-lg hover:bg-yellow-200 font-medium">B1 Intermedio</button>
+                            <button class="bg-yellow-200 text-yellow-800 p-3 rounded-lg hover:bg-yellow-300 font-medium">B2 Intermedio+</button>
+                            <button class="bg-red-100 text-red-800 p-3 rounded-lg hover:bg-red-200 font-medium">C1 Avanzato</button>
+                            <button class="bg-red-200 text-red-800 p-3 rounded-lg hover:bg-red-300 font-medium">C2 Madrelingua</button>
+                        </div>
+                    `;
+                    break;
+                
+                case 'daily-word':
+                    element = document.createElement('div');
+                    element.className = 'bg-gradient-to-r from-lime-400 to-green-400 text-white p-6 rounded-lg mb-6 cursor-pointer hover:from-lime-500 hover:to-green-500 transition-colors';
+                    element.innerHTML = `
+                        <h3 class="text-lg font-semibold mb-4">📅 Parola del Giorno</h3>
+                        <div class="text-center">
+                            <div class="text-4xl font-bold mb-2">Serendipità</div>
+                            <div class="text-lg mb-2">/se.ren.di.pi.ˈta/</div>
+                            <div class="text-sm opacity-90 mb-3">La fortuna di fare scoperte inaspettate</div>
+                            <button class="bg-white text-green-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100">Aggiungi al Vocabolario</button>
+                        </div>
+                    `;
+                    break;
+                
+                case 'conversation-practice':
+                    element = document.createElement('div');
+                    element.className = 'bg-white border border-gray-200 rounded-lg p-6 shadow-md mb-6 cursor-pointer hover:shadow-lg transition-shadow';
+                    element.innerHTML = `
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">💭 Pratica Conversazione</h3>
+                        <div class="bg-violet-50 p-4 rounded-lg mb-4">
+                            <h4 class="font-medium text-violet-800 mb-2">Scenario: Presentarsi</h4>
+                            <div class="space-y-3">
+                                <div class="bg-white p-3 rounded border-l-4 border-blue-400">
+                                    <strong>A:</strong> Ciao, mi chiamo Marco. E tu?
+                                </div>
+                                <div class="bg-white p-3 rounded border-l-4 border-green-400">
+                                    <strong>B:</strong> Piacere Marco, io sono Sofia. Di dove sei?
+                                </div>
+                                <div class="bg-white p-3 rounded border-l-4 border-blue-400">
+                                    <strong>A:</strong> Sono di Roma. Tu invece?
+                                </div>
+                            </div>
+                        </div>
+                        <button class="bg-violet-600 text-white px-4 py-2 rounded-lg hover:bg-violet-700">Pratica con l'Audio</button>
+                    `;
+                    break;
+                
+                case 'resources-links':
+                    element = document.createElement('div');
+                    element.className = 'bg-white border border-gray-200 rounded-lg p-6 shadow-md mb-6 cursor-pointer hover:shadow-lg transition-shadow';
+                    element.innerHTML = `
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">🔗 Risorse Utili</h3>
+                        <div class="space-y-3">
+                            <a href="#" class="flex items-center p-3 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors">
+                                <span class="text-2xl mr-3">📺</span>
+                                <div>
+                                    <div class="font-medium text-emerald-800">Film in Italiano</div>
+                                    <div class="text-sm text-emerald-600">Lista di film con sottotitoli</div>
+                                </div>
+                            </a>
+                            <a href="#" class="flex items-center p-3 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors">
+                                <span class="text-2xl mr-3">🎵</span>
+                                <div>
+                                    <div class="font-medium text-emerald-800">Musica Italiana</div>
+                                    <div class="text-sm text-emerald-600">Playlist per imparare cantando</div>
+                                </div>
+                            </a>
+                            <a href="#" class="flex items-center p-3 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors">
+                                <span class="text-2xl mr-3">📰</span>
+                                <div>
+                                    <div class="font-medium text-emerald-800">Notizie Semplificate</div>
+                                    <div class="text-sm text-emerald-600">News in italiano facile</div>
+                                </div>
+                            </a>
+                        </div>
+                    `;
+                    break;
+            }
+
+            element.id = elementId;
+            element.dataset.level = 'A1'; // Livello predefinito
+            element.addEventListener('click', () => selectElement(element));
+            element.addEventListener('dblclick', () => editElement(element));
+            
+            // Aggiungi badge livello visibile sull'elemento
+            addLevelBadge(element, 'A1');
+            
+            canvas.appendChild(element);
+        }
+
+        function addLevelBadge(element, level) {
+            // Rimuovi badge esistente se presente
+            const existingBadge = element.querySelector('.level-badge');
+            if (existingBadge) existingBadge.remove();
+            
+            // Crea nuovo badge
+            const badge = document.createElement('div');
+            badge.className = 'level-badge absolute top-2 right-2 text-xs px-2 py-1 rounded-full font-medium';
+            
+            // Colori per livelli
+            const levelColors = {
+                'A1': 'bg-green-200 text-green-800',
+                'A2': 'bg-green-300 text-green-900',
+                'B1': 'bg-yellow-200 text-yellow-800',
+                'B2': 'bg-yellow-300 text-yellow-900',
+                'C1': 'bg-red-200 text-red-800',
+                'C2': 'bg-red-300 text-red-900'
+            };
+            
+            badge.className += ' ' + (levelColors[level] || levelColors['A1']);
+            badge.textContent = level;
+            
+            // Aggiungi posizione relativa all'elemento se non presente
+            if (!element.style.position) {
+                element.style.position = 'relative';
+            }
+            
+            element.appendChild(badge);
+        }
+
+        function changeElementLevel(element, newLevel) {
+            element.dataset.level = newLevel;
+            addLevelBadge(element, newLevel);
+        }
+
+        function filterByLevel() {
+            const selectedLevel = document.getElementById('level-filter').value;
+            const elements = document.querySelectorAll('.element-item');
+            
+            elements.forEach(element => {
+                const elementLevels = element.dataset.levels ? element.dataset.levels.split(',') : [];
+                
+                if (selectedLevel === 'all' || elementLevels.includes(selectedLevel)) {
+                    element.style.display = 'block';
+                } else {
+                    element.style.display = 'none';
+                }
+            });
+        }
+
+        function selectElement(element) {
+            if (selectedElement) {
+                selectedElement.classList.remove('element-hover');
+            }
+            
+            selectedElement = element;
+            element.classList.add('element-hover');
+            showProperties(element);
+        }
+
+        function showProperties(element) {
+            const panel = document.getElementById('properties-panel');
+            const content = document.getElementById('properties-content');
+            
+            // Ottieni il livello attuale dell'elemento
+            const currentLevel = element.dataset.level || 'A1';
+            
+            let propertiesHTML = `
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">🎯 Livello Elemento:</label>
+                        <select onchange="changeElementLevel(selectedElement, this.value)" class="w-full p-2 border rounded text-sm">
+                            <option value="A1" ${currentLevel === 'A1' ? 'selected' : ''}>A1 - Principiante</option>
+                            <option value="A2" ${currentLevel === 'A2' ? 'selected' : ''}>A2 - Elementare</option>
+                            <option value="B1" ${currentLevel === 'B1' ? 'selected' : ''}>B1 - Intermedio</option>
+                            <option value="B2" ${currentLevel === 'B2' ? 'selected' : ''}>B2 - Intermedio+</option>
+                            <option value="C1" ${currentLevel === 'C1' ? 'selected' : ''}>C1 - Avanzato</option>
+                            <option value="C2" ${currentLevel === 'C2' ? 'selected' : ''}>C2 - Madrelingua</option>
+                        </select>
+                    </div>
+                    <button onclick="editElement(selectedElement)" class="w-full bg-blue-600 text-white py-2 px-3 rounded text-sm hover:bg-blue-700">
+                        ✏️ Modifica Contenuto
+                    </button>
+                    <button onclick="deleteElement(selectedElement)" class="w-full bg-red-600 text-white py-2 px-3 rounded text-sm hover:bg-red-700">
+                        🗑️ Elimina
+                    </button>
+                </div>
+            `;
+            
+            content.innerHTML = propertiesHTML;
+            panel.classList.remove('hidden');
+        }
+
+        function editElement(element) {
+            // Determina il tipo di elemento per personalizzare l'editing
+            const elementType = getElementType(element);
+            
+            switch(elementType) {
+                case 'vocab-card':
+                    editVocabCard(element);
+                    break;
+                case 'exercise-quiz':
+                    editQuiz(element);
+                    break;
+                case 'phrase-book':
+                    editPhraseBook(element);
+                    break;
+                case 'grammar-section':
+                    editGrammarSection(element);
+                    break;
+                case 'pronunciation-guide':
+                    editPronunciationGuide(element);
+                    break;
+                case 'daily-word':
+                    editDailyWord(element);
+                    break;
+                case 'cultural-notes':
+                    editCulturalNotes(element);
+                    break;
+                default:
+                    // Editing generico per altri elementi
+                    const currentText = element.textContent.trim();
+                    const newText = prompt('Modifica il contenuto:', currentText);
+                    if (newText !== null && newText.trim() !== '') {
+                        element.textContent = newText;
+                    }
+                    break;
+            }
+        }
+
+        function editVocabCard(element) {
+            const frontDiv = element.querySelector('.flip-card-front div');
+            const backDiv = element.querySelector('.flip-card-back div');
+            
+            const currentWord = frontDiv.querySelector('.text-3xl').textContent;
+            const currentTranslation = backDiv.querySelector('.text-3xl').textContent;
+            
+            const newWord = prompt('Parola in ' + languageContent.languageNames[currentTargetLang] + ':', currentWord);
+            if (newWord === null) return;
+            
+            const newTranslation = prompt('Traduzione in ' + languageContent.languageNames[currentSourceLang] + ':', currentTranslation);
+            if (newTranslation === null) return;
+            
+            if (newWord.trim() && newTranslation.trim()) {
+                frontDiv.innerHTML = `
+                    <div class="text-3xl font-bold mb-2">${newWord}</div>
+                    <div class="text-sm opacity-80">${languageContent.languageNames[currentTargetLang]}</div>
+                `;
+                backDiv.innerHTML = `
+                    <div class="text-3xl font-bold mb-2">${newTranslation}</div>
+                    <div class="text-sm opacity-80">${languageContent.languageNames[currentSourceLang]}</div>
+                `;
+            }
+        }
+
+        function editQuiz(element) {
+            const questionP = element.querySelector('p');
+            const options = element.querySelectorAll('.quiz-option');
+            
+            const newQuestion = prompt('Domanda del quiz:', questionP.textContent);
+            if (newQuestion === null) return;
+            
+            const newOptions = [];
+            let correctAnswer = 0;
+            
+            for (let i = 0; i < 3; i++) {
+                const currentOption = options[i].textContent.substring(3); // Rimuovi "A) ", "B) ", etc.
+                const newOption = prompt(`Opzione ${String.fromCharCode(65 + i)}:`, currentOption);
+                if (newOption === null) return;
+                newOptions.push(newOption);
+            }
+            
+            const correctIndex = prompt('Quale opzione è corretta? (A, B, o C):', 'B').toUpperCase();
+            if (correctIndex === 'A') correctAnswer = 0;
+            else if (correctIndex === 'B') correctAnswer = 1;
+            else if (correctIndex === 'C') correctAnswer = 2;
+            
+            // Aggiorna il contenuto
+            questionP.textContent = newQuestion;
+            options.forEach((option, index) => {
+                option.innerHTML = `${String.fromCharCode(65 + index)}) ${newOptions[index]}`;
+                option.dataset.answer = index === correctAnswer ? 'correct' : 'wrong';
+                // Reset dello stile
+                option.className = 'quiz-option w-full text-left p-3 bg-gray-50 rounded hover:bg-blue-50 border';
+            });
+            
+            // Reset del risultato
+            const resultDiv = element.querySelector('.quiz-result');
+            const verifyBtn = element.querySelector('.verify-btn');
+            if (resultDiv) {
+                resultDiv.classList.add('hidden');
+                resultDiv.innerHTML = '';
+            }
+            if (verifyBtn) {
+                verifyBtn.disabled = false;
+                verifyBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                verifyBtn.textContent = 'Verifica Risposta';
+            }
+        }
+
+        function editPhraseBook(element) {
+            const title = element.querySelector('h3');
+            const phraseContainer = element.querySelector('.space-y-3');
+            const phrases = phraseContainer.querySelectorAll('.bg-teal-50');
+            
+            const newTitle = prompt('Titolo del frasario:', title.textContent.replace('💬 ', ''));
+            if (newTitle === null) return;
+            
+            const newPhrases = [];
+            phrases.forEach((phraseDiv, index) => {
+                const currentPhrase = phraseDiv.querySelector('.font-medium').textContent;
+                const currentTranslation = phraseDiv.querySelector('.text-sm').textContent;
+                
+                const newPhrase = prompt(`Frase ${index + 1} (${languageContent.languageNames[currentSourceLang]}):`, currentPhrase);
+                if (newPhrase === null) return;
+                
+                const newTranslation = prompt(`Traduzione ${index + 1} (${languageContent.languageNames[currentTargetLang]}):`, currentTranslation);
+                if (newTranslation === null) return;
+                
+                newPhrases.push({ phrase: newPhrase, translation: newTranslation });
+            });
+            
+            if (newPhrases.length === phrases.length) {
+                title.textContent = `💬 ${newTitle}`;
+                phraseContainer.innerHTML = newPhrases.map(item => `
+                    <div class="bg-teal-50 p-3 rounded-lg">
+                        <div class="font-medium text-teal-800">${item.phrase}</div>
+                        <div class="text-sm text-teal-600">${item.translation}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function editGrammarSection(element) {
+            const title = element.querySelector('h3');
+            const ruleTitle = element.querySelector('h4');
+            const ruleText = element.querySelector('.text-gray-700');
+            
+            const newTitle = prompt('Titolo della sezione grammaticale:', title.textContent.replace('📖 ', ''));
+            if (newTitle === null) return;
+            
+            const newRuleTitle = prompt('Titolo della regola:', ruleTitle.textContent);
+            if (newRuleTitle === null) return;
+            
+            const newRuleText = prompt('Spiegazione della regola:', ruleText.textContent);
+            if (newRuleText === null) return;
+            
+            if (newTitle.trim() && newRuleTitle.trim() && newRuleText.trim()) {
+                title.textContent = `📖 ${newTitle}`;
+                ruleTitle.textContent = newRuleTitle;
+                ruleText.textContent = newRuleText;
+            }
+        }
+
+        function editPronunciationGuide(element) {
+            const title = element.querySelector('h3');
+            const wordDivs = element.querySelectorAll('.bg-yellow-50');
+            
+            wordDivs.forEach((wordDiv, index) => {
+                const wordElement = wordDiv.querySelector('.font-bold');
+                const pronunciationElement = wordDiv.querySelector('.text-gray-600');
+                
+                const currentWord = wordElement.textContent;
+                const currentPronunciation = pronunciationElement.textContent;
+                
+                const newWord = prompt(`Parola ${index + 1}:`, currentWord);
+                if (newWord === null) return;
+                
+                const newPronunciation = prompt(`Pronuncia ${index + 1} (usa /simboli/):`, currentPronunciation);
+                if (newPronunciation === null) return;
+                
+                if (newWord.trim() && newPronunciation.trim()) {
+                    wordElement.textContent = newWord;
+                    pronunciationElement.textContent = newPronunciation;
+                    
+                    // Aggiorna anche l'onclick del pulsante
+                    const button = wordDiv.querySelector('button');
+                    if (button) {
+                        button.setAttribute('onclick', `playPronunciation('${newWord.toLowerCase()}')`);
+                    }
+                }
+            });
+        }
+
+        function editDailyWord(element) {
+            const wordElement = element.querySelector('.text-4xl');
+            const pronunciationElement = element.querySelector('.text-lg');
+            const definitionElement = element.querySelector('.text-sm.opacity-90');
+            
+            const currentWord = wordElement.textContent;
+            const currentPronunciation = pronunciationElement.textContent;
+            const currentDefinition = definitionElement.textContent;
+            
+            const newWord = prompt('Parola del giorno:', currentWord);
+            if (newWord === null) return;
+            
+            const newPronunciation = prompt('Pronuncia (usa /simboli/):', currentPronunciation);
+            if (newPronunciation === null) return;
+            
+            const newDefinition = prompt('Definizione:', currentDefinition);
+            if (newDefinition === null) return;
+            
+            if (newWord.trim() && newPronunciation.trim() && newDefinition.trim()) {
+                wordElement.textContent = newWord;
+                pronunciationElement.textContent = newPronunciation;
+                definitionElement.textContent = newDefinition;
+            }
+        }
+
+        function editCulturalNotes(element) {
+            const noteTitle = element.querySelector('h4');
+            const noteText = element.querySelector('.text-gray-700');
+            const tipText = element.querySelector('.text-pink-600');
+            
+            const currentTitle = noteTitle.textContent;
+            const currentText = noteText.textContent;
+            const currentTip = tipText.textContent.replace('💡 Consiglio: ', '');
+            
+            const newTitle = prompt('Titolo della nota culturale:', currentTitle);
+            if (newTitle === null) return;
+            
+            const newText = prompt('Contenuto della nota:', currentText);
+            if (newText === null) return;
+            
+            const newTip = prompt('Consiglio pratico:', currentTip);
+            if (newTip === null) return;
+            
+            if (newTitle.trim() && newText.trim() && newTip.trim()) {
+                noteTitle.textContent = newTitle;
+                noteText.textContent = newText;
+                tipText.textContent = `💡 Consiglio: ${newTip}`;
+            }
+        }
+
+        function deleteElement(element) {
+            if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
+                element.remove();
+                selectedElement = null;
+                document.getElementById('properties-panel').classList.add('hidden');
+                
+                const canvas = document.getElementById('canvas');
+                if (canvas.children.length === 0) {
+                    canvas.innerHTML = `
+                        <div class="text-center text-gray-400 py-20">
+                            <div class="text-6xl mb-4">🌍</div>
+                            <h3 class="text-xl font-medium mb-2">Crea il tuo sito per imparare le lingue</h3>
+                            <p>Trascina gli elementi per costruire lezioni e esercizi</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function previewSite() {
+            const canvas = document.getElementById('canvas');
+            const modal = document.getElementById('preview-modal');
+            const previewContent = document.getElementById('preview-content');
+            
+            const clonedContent = canvas.cloneNode(true);
+            const elements = clonedContent.querySelectorAll('*');
+            
+            elements.forEach(el => {
+                el.classList.remove('cursor-pointer', 'hover:bg-blue-50', 'element-hover');
+                el.removeAttribute('onclick');
+            });
+            
+            previewContent.innerHTML = clonedContent.innerHTML;
+            modal.classList.remove('hidden');
+        }
+
+        function closePreview() {
+            document.getElementById('preview-modal').classList.add('hidden');
+        }
+
+        function clearAll() {
+            if (confirm('Sei sicuro di voler eliminare tutti gli elementi e ricominciare da capo?')) {
+                const canvas = document.getElementById('canvas');
+                
+                while (canvas.firstChild) {
+                    canvas.removeChild(canvas.firstChild);
+                }
+                
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'text-center text-gray-400 py-20';
+                emptyMessage.innerHTML = `
+                    <div class="text-6xl mb-4">🌍</div>
+                    <h3 class="text-xl font-medium mb-2">Crea il tuo sito per imparare le lingue</h3>
+                    <p>Trascina gli elementi per costruire lezioni e esercizi</p>
+                `;
+                canvas.appendChild(emptyMessage);
+                
+                selectedElement = null;
+                document.getElementById('properties-panel').classList.add('hidden');
+                elementCounter = 0;
+            }
+        }
+
+        function exportSite() {
+            const canvas = document.getElementById('canvas');
+            const content = canvas.innerHTML;
+            
+            const cleanContent = content
+                .replace(/cursor-pointer/g, '')
+                .replace(/hover:bg-blue-50/g, '')
+                .replace(/element-hover/g, '')
+                .replace(/onclick="[^"]*"/g, '');
+            
+            const htmlTemplate = '<!DOCTYPE html>\n' +
+                '<html lang="it">\n' +
+                '<head>\n' +
+                '    <meta charset="UTF-8">\n' +
+                '    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+                '    <title>Il Mio Sito di Lingue</title>\n' +
+                '    <script src="https://cdn.tailwindcss.com"><\/script>\n' +
+                '    <style>\n' +
+                '        .flag { font-size: 1.5em; }\n' +
+                '        .flip-card { perspective: 1000px; }\n' +
+                '        .flip-card-inner { transition: transform 0.6s; transform-style: preserve-3d; }\n' +
+                '        .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }\n' +
+                '        .flip-card-front, .flip-card-back { backface-visibility: hidden; }\n' +
+                '        .flip-card-back { transform: rotateY(180deg); }\n' +
+                '    <\/style>\n' +
+                '</head>\n' +
+                '<body class="bg-gray-50 font-sans">\n' +
+                '    <div class="container mx-auto px-4 py-8">\n' +
+                '        ' + cleanContent + '\n' +
+                '    </div>\n' +
+                '</body>\n' +
+                '</html>';
+
+            showExportModal(htmlTemplate);
+        }
+
+        function showExportModal(htmlCode) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+            
+            const modalContent = document.createElement('div');
+            modalContent.className = 'bg-white rounded-lg w-full max-w-4xl h-5/6 flex flex-col';
+            
+            const header = document.createElement('div');
+            header.className = 'flex items-center justify-between p-4 border-b';
+            header.innerHTML = '<h3 class="text-lg font-semibold">💾 Codice HTML del tuo sito lingue</h3><button onclick="this.closest(\'.fixed\').remove()" class="text-gray-500 hover:text-gray-700 text-xl">✕</button>';
+            
+            const body = document.createElement('div');
+            body.className = 'flex-1 overflow-auto p-4';
+            
+            const description = document.createElement('p');
+            description.className = 'text-sm text-gray-600 mb-4';
+            description.textContent = 'Copia questo codice e salvalo come file .html per pubblicare il tuo sito di lingue:';
+            
+            const textarea = document.createElement('textarea');
+            textarea.className = 'w-full h-full border rounded-lg p-4 font-mono text-sm bg-gray-50 resize-none';
+            textarea.readOnly = true;
+            textarea.value = htmlCode;
+            textarea.onclick = function() { this.select(); };
+            
+            const footer = document.createElement('div');
+            footer.className = 'p-4 border-t';
+            
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 mr-2';
+            copyBtn.innerHTML = '📋 Copia Codice';
+            copyBtn.onclick = function() {
+                copyToClipboard(htmlCode);
+                alert('Codice copiato negli appunti!');
+            };
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700';
+            closeBtn.textContent = 'Chiudi';
+            closeBtn.onclick = function() {
+                modal.remove();
+            };
+            
+            body.appendChild(description);
+            body.appendChild(textarea);
+            footer.appendChild(copyBtn);
+            footer.appendChild(closeBtn);
+            modalContent.appendChild(header);
+            modalContent.appendChild(body);
+            modalContent.appendChild(footer);
+            modal.appendChild(modalContent);
+            
+            document.body.appendChild(modal);
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+            });
+        }
+
+        document.addEventListener('dragend', (e) => {
+            e.target.classList.remove('dragging');
+            document.getElementById('canvas').classList.remove('drop-zone');
+        });
+
+        // Funzioni interattive per gli esercizi
+        function verifyQuizAnswer(button) {
+            const quizContainer = button.closest('.bg-white');
+            const options = quizContainer.querySelectorAll('.quiz-option');
+            const resultDiv = quizContainer.querySelector('.quiz-result');
+            let selectedOption = null;
+            
+            // Trova l'opzione selezionata
+            options.forEach(option => {
+                if (option.classList.contains('bg-blue-200')) {
+                    selectedOption = option;
+                }
+            });
+            
+            if (!selectedOption) {
+                alert('Seleziona prima una risposta!');
+                return;
+            }
+            
+            // Mostra risultato
+            resultDiv.classList.remove('hidden');
+            
+            if (selectedOption.dataset.answer === 'correct') {
+                selectedOption.classList.add('bg-green-200', 'border-green-400');
+                resultDiv.innerHTML = '<div class="text-green-600 font-medium">✅ Corretto! Ottimo lavoro!</div>';
+            } else {
+                selectedOption.classList.add('bg-red-200', 'border-red-400');
+                // Evidenzia la risposta corretta
+                options.forEach(option => {
+                    if (option.dataset.answer === 'correct') {
+                        option.classList.add('bg-green-200', 'border-green-400');
+                    }
+                });
+                resultDiv.innerHTML = '<div class="text-red-600 font-medium">❌ Sbagliato. La risposta corretta è evidenziata in verde.</div>';
+            }
+            
+            // Disabilita il pulsante
+            button.disabled = true;
+            button.classList.add('opacity-50', 'cursor-not-allowed');
+            button.textContent = 'Risposta verificata';
+        }
+        
+        function playPronunciation(word) {
+            // Simula la riproduzione audio con feedback visivo
+            const button = event.target;
+            const originalText = button.textContent;
+            
+            button.textContent = '🔊 Riproducendo...';
+            button.disabled = true;
+            
+            // Simula la durata dell'audio
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+                
+                // Mostra messaggio di feedback
+                const feedback = document.createElement('div');
+                feedback.className = 'text-xs text-blue-600 mt-1';
+                feedback.textContent = `Audio di "${word}" riprodotto`;
+                button.parentNode.appendChild(feedback);
+                
+                setTimeout(() => {
+                    if (feedback.parentNode) {
+                        feedback.parentNode.removeChild(feedback);
+                    }
+                }, 2000);
+            }, 1500);
+        }
+        
+        // Gestione selezione opzioni quiz
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('quiz-option')) {
+                const quizContainer = e.target.closest('[data-quiz]');
+                const options = quizContainer.querySelectorAll('.quiz-option');
+                
+                // Rimuovi selezione precedente
+                options.forEach(option => {
+                    option.classList.remove('bg-blue-200', 'border-blue-400');
+                });
+                
+                // Seleziona l'opzione cliccata
+                e.target.classList.add('bg-blue-200', 'border-blue-400');
+            }
+            
+            if (!e.target.closest('#canvas') && !e.target.closest('#properties-panel')) {
+                if (selectedElement) {
+                    selectedElement.classList.remove('element-hover');
+                    selectedElement = null;
+                    document.getElementById('properties-panel').classList.add('hidden');
+                }
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97e71d2b440ced6b',t:'MTc1Nzc2MDk0NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

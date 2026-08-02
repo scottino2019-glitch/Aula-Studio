@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Studio Pro - Font & Emoji</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Caricamento Font Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&family=Noto+Sans+SC:wght@700&family=Noto+Sans+KR:wght@700&family=Zhi+Mang+Xing&family=Nanum+Pen+Script&family=Gaegu&family=Righteous&family=Bangers&family=Permanent+Marker&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; }
+        
+        /* FIX LEGGIBILITÀ INPUT: Testo Nero su Bianco sempre visibile */
+        .input-manual {
+            width: 100% !important;
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border: 2px solid #cbd5e1 !important;
+            border-radius: 12px !important;
+            padding: 12px !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            outline: none !important;
+        }
+        .input-manual:focus {
+            border-color: #8b5cf6 !important;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2) !important;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .canvas-area {
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            border-radius: 30px;
+            overflow: hidden;
+            background: #000;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-10">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Pannello Editor -->
+        <div class="lg:col-span-5 space-y-6">
+            <div class="glass-panel p-8 rounded-[2rem]">
+                <h1 class="text-3xl font-black italic tracking-tighter bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent mb-8 uppercase">
+                    Flashcard Editor
+                </h1>
+
+                <div class="space-y-5">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Emoji / Icona</label>
+                            <input type="text" id="inEmoji" placeholder="🔥" class="input-manual text-center text-xl">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Secondi</label>
+                            <input type="number" id="inDur" value="5" min="2" class="input-manual text-center">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Testo Principale (F1)</label>
+                        <input type="text" id="inF1" placeholder="Scrivi parola..." class="input-manual">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Sottotitolo (F2)</label>
+                        <input type="text" id="inF2" placeholder="Scrivi fonetica/traduzione..." class="input-manual">
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Descrizione (F3)</label>
+                        <textarea id="inF3" rows="3" placeholder="Scrivi regole o note..." class="input-manual"></textarea>
+                    </div>
+
+                    <button id="addBtn" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl shadow-xl shadow-purple-900/40 transition-transform active:scale-95 uppercase">
+                        Aggiungi alla Timeline
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pannello Stile -->
+            <div class="glass-panel p-6 rounded-[2rem] grid grid-cols-2 gap-4">
+                <div class="col-span-2">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Scegli il Font Artistico</label>
+                    <select id="fontSelect" class="w-full bg-slate-800 text-white border border-slate-700 p-3 rounded-xl outline-none focus:border-purple-500">
+                        <option value="'Righteous'">Moderno (Righteous)</option>
+                        <option value="'Bangers'">Fumetto (Bangers)</option>
+                        <option value="'Permanent Marker'">Marker</option>
+                        <option value="'Zhi Mang Xing'">Cinese Calligrafico</option>
+                        <option value="'Noto Sans SC'">Cinese Moderno</option>
+                        <option value="'Nanum Pen Script'">Coreano Penna</option>
+                        <option value="'Gaegu'">Coreano Kids</option>
+                        <option value="'Noto Sans JP'">Giapponese</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Colore Card</label>
+                    <input type="color" id="colCard" value="#ffffff" class="w-full h-10 rounded-lg cursor-pointer bg-transparent border border-slate-700">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Colore Testo</label>
+                    <input type="color" id="colTxt" value="#1e293b" class="w-full h-10 rounded-lg cursor-pointer bg-transparent border border-slate-700">
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonna Preview -->
+        <div class="lg:col-span-7 flex flex-col items-center">
+            <div class="canvas-area max-w-[500px] w-full aspect-square">
+                <canvas id="canvas" width="1000" height="1000" class="w-full h-full"></canvas>
+            </div>
+
+            <div class="w-full max-w-[500px] mt-8 space-y-4">
+                <div class="grid grid-cols-3 gap-4">
+                    <button id="recordBtn" class="col-span-2 bg-red-600 hover:bg-red-500 text-white font-black py-5 rounded-2xl shadow-xl flex items-center justify-center gap-3 group">
+                        <span class="w-3 h-3 bg-white rounded-full animate-pulse group-hover:scale-125 transition-transform"></span> 
+                        ESPORTA VIDEO
+                    </button>
+                    <button id="clearBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold rounded-2xl">RESET</button>
+                </div>
+                <p id="status" class="text-center text-xs font-mono text-purple-400 h-4"></p>
+            </div>
+
+            <!-- Timeline -->
+            <div class="w-full max-w-[500px] mt-6 glass-panel p-6 rounded-3xl">
+                <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Timeline Progetto</h3>
+                <div id="timeline" class="flex flex-wrap gap-2">
+                    <p id="emptyMsg" class="text-slate-600 italic text-sm">Nessuna card aggiunta.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const inEmoji = document.getElementById('inEmoji');
+        const inDur = document.getElementById('inDur');
+        const inF1 = document.getElementById('inF1');
+        const inF2 = document.getElementById('inF2');
+        const inF3 = document.getElementById('inF3');
+        const fontSel = document.getElementById('fontSelect');
+        const colCard = document.getElementById('colCard');
+        const colTxt = document.getElementById('colTxt');
+        
+        let playlist = [];
+
+        document.getElementById('addBtn').onclick = () => {
+            if(!inF1.value.trim()) return;
+            
+            playlist.push({
+                emoji: inEmoji.value || "✨",
+                f1: inF1.value,
+                f2: inF2.value,
+                f3: inF3.value,
+                dur: (parseInt(inDur.value) || 5) * 1000,
+                font: fontSel.value
+            });
+            
+            updateUI();
+            inF1.value = ""; inF2.value = ""; inF3.value = ""; inEmoji.value = "";
+            inF1.focus();
+        };
+
+        function updateUI() {
+            const container = document.getElementById('timeline');
+            if (playlist.length === 0) {
+                container.innerHTML = `<p id="emptyMsg" class="text-slate-600 italic text-sm">Nessuna card aggiunta.</p>`;
+                return;
+            }
+            container.innerHTML = playlist.map((c, i) => `
+                <div class="bg-slate-800 border border-slate-700 px-3 py-1 rounded-full text-[10px] flex items-center gap-2">
+                    <span>${c.emoji} ${c.f1}</span>
+                    <button onclick="remove(${i})" class="text-red-500 font-bold hover:text-red-300">×</button>
+                </div>
+            `).join('');
+        }
+
+        window.remove = (i) => {
+            playlist.splice(i, 1);
+            updateUI();
+        }
+
+        document.getElementById('clearBtn').onclick = () => {
+            playlist = [];
+            updateUI();
+        };
+
+        function draw(time) {
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            // Sfondo area video
+            ctx.fillStyle = "#020617";
+            ctx.fillRect(0, 0, w, h);
+
+            let active = {
+                emoji: inEmoji.value || "💡",
+                f1: inF1.value || "Anteprima",
+                f2: inF2.value || "Sottotitolo qui",
+                f3: inF3.value || "La descrizione apparirà in questa fase...",
+                dur: 5000,
+                font: fontSel.value
+            };
+
+            let prog = (time % 5000) / 5000;
+
+            if (playlist.length > 0) {
+                const total = playlist.reduce((a, b) => a + b.dur, 0);
+                let elapsed = time % total;
+                let current = 0;
+                for (let c of playlist) {
+                    if (elapsed >= current && elapsed < current + c.dur) {
+                        active = c;
+                        prog = (elapsed - current) / c.dur;
+                        break;
+                    }
+                    current += c.dur;
+                }
+            }
+
+            // Disegno Card
+            ctx.save();
+            ctx.translate(w/2, h/2);
+            
+            // Ombra card
+            ctx.shadowColor = "rgba(0,0,0,0.5)";
+            ctx.shadowBlur = 60;
+            
+            ctx.fillStyle = colCard.value;
+            ctx.beginPath();
+            ctx.roundRect(-440, -440, 880, 880, 80);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Opacità In/Out
+            let opacity = 1;
+            if(prog < 0.1) opacity = prog * 10;
+            if(prog > 0.9) opacity = (1 - prog) * 10;
+            ctx.globalAlpha = opacity;
+
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = colTxt.value;
+
+            // 1. Emoji
+            ctx.font = "130px serif";
+            ctx.fillText(active.emoji, 0, -300);
+
+            // 2. Ciclo Animazione Frame
+            if (prog < 0.35) {
+                // SOLO TITOLO
+                ctx.font = `900 150px ${active.font}, sans-serif`;
+                wrapText(ctx, active.f1, 0, 50, 750, 160);
+            } 
+            else if (prog < 0.7) {
+                // TITOLO + SOTTOTITOLO
+                ctx.font = `900 100px ${active.font}, sans-serif`;
+                ctx.fillText(active.f1, 0, -60);
+                ctx.font = "italic 600 60px sans-serif";
+                ctx.fillText(active.f2, 0, 100);
+            } 
+            else {
+                // TUTTO IL CONTENUTO
+                ctx.font = `900 70px ${active.font}, sans-serif`;
+                ctx.fillText(active.f1, 0, -160);
+                ctx.font = "italic 600 45px sans-serif";
+                ctx.fillText(active.f2, 0, -70);
+                ctx.font = "500 40px sans-serif";
+                wrapText(ctx, active.f3, 0, 90, 700, 55);
+            }
+
+            ctx.restore();
+            requestAnimationFrame(draw);
+        }
+
+        function wrapText(c, t, x, y, mw, lh) {
+            let words = t.split(' ');
+            let line = '';
+            for(let n = 0; n < words.length; n++) {
+                let test = line + words[n] + ' ';
+                if (c.measureText(test).width > mw && n > 0) {
+                    c.fillText(line, x, y);
+                    line = words[n] + ' ';
+                    y += lh;
+                } else { line = test; }
+            }
+            c.fillText(line, x, y);
+        }
+
+        document.getElementById('recordBtn').onclick = () => {
+            if (playlist.length === 0) return;
+            const totalDur = playlist.reduce((a,b)=>a+b.dur, 0);
+            const stream = canvas.captureStream(30);
+            const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+            const chunks = [];
+            
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => {
+                const url = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
+                const a = document.createElement('a'); a.href = url; a.download = 'flashcards_video.webm'; a.click();
+                document.getElementById('status').innerText = "✅ ESPORTAZIONE COMPLETATA";
+            };
+            
+            recorder.start();
+            document.getElementById('status').innerText = "🔴 REGISTRAZIONE IN CORSO...";
+            setTimeout(() => recorder.stop(), totalDur);
+        };
+
+        requestAnimationFrame(draw);
+    </script>
+</body>
+</html>

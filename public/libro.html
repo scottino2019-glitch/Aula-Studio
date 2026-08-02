@@ -1,0 +1,1342 @@
+<!doctype html>
+<html lang="it" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Grammar Book</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    body {
+      font-family: 'Georgia', serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #2c3e50;
+    }
+    
+    .book-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      overflow: auto;
+      position: relative;
+    }
+    
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 1001;
+      background: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      width: 48px;
+      height: 48px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .menu-toggle span {
+      display: block;
+      width: 24px;
+      height: 3px;
+      background: #667eea;
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+    
+    .menu-toggle.active span:nth-child(1) {
+      transform: rotate(45deg) translate(6px, 6px);
+    }
+    
+    .menu-toggle.active span:nth-child(2) {
+      opacity: 0;
+    }
+    
+    .menu-toggle.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(6px, -6px);
+    }
+    
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+    
+    .sidebar {
+      width: 280px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+    
+    .sidebar-header {
+      padding: 24px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .sidebar-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
+    .page-count {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+    
+    .pages-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 0;
+    }
+    
+    .category-group {
+      margin-bottom: 20px;
+    }
+    
+    .category-title {
+      padding: 8px 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #7f8c8d;
+      background: rgba(0, 0, 0, 0.03);
+    }
+    
+    .page-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+      font-size: 14px;
+      color: #2c3e50;
+    }
+    
+    .page-item:hover {
+      background: rgba(102, 126, 234, 0.1);
+      border-left-color: #667eea;
+    }
+    
+    .page-item.active {
+      background: rgba(102, 126, 234, 0.15);
+      border-left-color: #667eea;
+      font-weight: 600;
+      color: #667eea;
+    }
+    
+    .add-page-btn {
+      margin: 16px;
+      padding: 14px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      transition: transform 0.2s;
+    }
+    
+    .add-page-btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    .add-page-btn:active {
+      transform: translateY(0);
+    }
+    
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .top-bar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .book-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2c3e50;
+    }
+    
+    .top-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .btn-export {
+      background: #27ae60;
+      color: white;
+    }
+    
+    .btn-export:hover {
+      background: #229954;
+    }
+    
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px;
+    }
+    
+    .page-view {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 60px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      min-height: 600px;
+    }
+    
+    .page-header {
+      margin-bottom: 32px;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 16px;
+    }
+    
+    .page-title {
+      font-size: 36px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 8px;
+    }
+    
+    .page-category {
+      display: inline-block;
+      padding: 6px 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    .page-content {
+      font-size: 18px;
+      line-height: 1.8;
+      color: #34495e;
+      font-family: 'Georgia', serif;
+    }
+    
+    .page-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    
+    .page-content table td,
+    .page-content table th {
+      border: 2px solid #667eea;
+      padding: 12px;
+      text-align: left;
+    }
+    
+    .page-content table th {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: 700;
+    }
+    
+    .page-content ul,
+    .page-content ol {
+      margin: 16px 0;
+      padding-left: 32px;
+    }
+    
+    .page-content li {
+      margin: 8px 0;
+    }
+    
+    .page-content h3 {
+      font-size: 28px;
+      margin: 24px 0 16px 0;
+      color: #667eea;
+      font-weight: 700;
+    }
+    
+    .page-content strong {
+      font-weight: 700;
+      color: #2c3e50;
+    }
+    
+    .page-content em {
+      font-style: italic;
+    }
+    
+    .page-actions {
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid #ecf0f1;
+      display: flex;
+      gap: 12px;
+    }
+    
+    .btn-edit {
+      background: #f39c12;
+      color: white;
+    }
+    
+    .btn-edit:hover {
+      background: #e67e22;
+    }
+    
+    .btn-delete {
+      background: #e74c3c;
+      color: white;
+    }
+    
+    .btn-delete:hover {
+      background: #c0392b;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 80px 40px;
+    }
+    
+    .empty-icon {
+      font-size: 80px;
+      margin-bottom: 24px;
+    }
+    
+    .empty-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin-bottom: 12px;
+    }
+    
+    .empty-text {
+      font-size: 16px;
+      color: #7f8c8d;
+      margin-bottom: 32px;
+    }
+    
+    .form-container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    
+    .form-group {
+      margin-bottom: 24px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #2c3e50;
+      font-size: 14px;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .editor-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px;
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      margin-top: 8px;
+    }
+    
+    .toolbar-btn {
+      padding: 8px 14px;
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s;
+      color: #495057;
+    }
+    
+    .toolbar-btn:hover {
+      background: #e9ecef;
+      border-color: #667eea;
+      color: #667eea;
+    }
+    
+    .content-editor {
+      min-height: 300px;
+      max-height: 400px;
+      padding: 16px;
+      border: 2px solid #e9ecef;
+      border-radius: 0 0 8px 8px;
+      font-size: 16px;
+      line-height: 1.8;
+      background: white;
+      overflow-y: auto;
+      font-family: 'Georgia', serif;
+    }
+    
+    .content-editor:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .content-editor table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+    }
+    
+    .content-editor table td,
+    .content-editor table th {
+      border: 2px solid #667eea;
+      padding: 12px;
+      text-align: left;
+      min-width: 80px;
+    }
+    
+    .content-editor table th {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: 700;
+    }
+    
+    .content-editor ul,
+    .content-editor ol {
+      margin: 12px 0;
+      padding-left: 32px;
+    }
+    
+    .content-editor li {
+      margin: 8px 0;
+    }
+    
+    .content-editor h3 {
+      font-size: 24px;
+      margin: 20px 0 12px 0;
+      color: #667eea;
+      font-weight: 700;
+    }
+    
+    .content-editor strong {
+      font-weight: 700;
+      color: #2c3e50;
+    }
+    
+    .content-editor em {
+      font-style: italic;
+    }
+    
+    .table-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+    
+    .table-modal-content {
+      background: white;
+      padding: 32px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 100%;
+    }
+    
+    .table-modal h3 {
+      margin-bottom: 20px;
+      color: #2c3e50;
+      font-size: 22px;
+    }
+    
+    .table-modal .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .table-modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    
+    .btn-primary {
+      flex: 1;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 14px;
+    }
+    
+    .btn-secondary {
+      flex: 1;
+      background: #95a5a6;
+      color: white;
+      padding: 14px;
+    }
+    
+    .btn-secondary:hover {
+      background: #7f8c8d;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 16px 24px;
+      background: #27ae60;
+      color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      font-weight: 600;
+      z-index: 1000;
+      animation: slideUp 0.3s ease-out;
+    }
+    
+    .toast.error {
+      background: #e74c3c;
+    }
+    
+    @keyframes slideUp {
+      from {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .no-pages {
+      text-align: center;
+      padding: 40px 20px;
+      color: #95a5a6;
+      font-size: 13px;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: flex;
+      }
+      
+      .sidebar-overlay.active {
+        display: block;
+      }
+      
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 1000;
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      
+      .top-bar {
+        padding: 16px 20px;
+        padding-left: 72px;
+      }
+      
+      .book-title {
+        font-size: 18px;
+      }
+      
+      .btn-export {
+        padding: 10px 16px;
+        font-size: 13px;
+      }
+      
+      .content-area {
+        padding: 20px 16px;
+      }
+      
+      .page-view {
+        padding: 32px 24px;
+        min-height: auto;
+      }
+      
+      .page-title {
+        font-size: 28px;
+      }
+      
+      .page-content {
+        font-size: 16px;
+      }
+      
+      .page-actions {
+        flex-direction: column;
+      }
+      
+      .page-actions .btn {
+        width: 100%;
+      }
+      
+      .empty-state {
+        padding: 40px 20px;
+      }
+      
+      .empty-icon {
+        font-size: 60px;
+      }
+      
+      .empty-title {
+        font-size: 22px;
+      }
+      
+      .empty-text {
+        font-size: 14px;
+      }
+      
+      .form-container {
+        max-width: 100%;
+      }
+      
+      .form-actions {
+        flex-direction: column;
+      }
+      
+      .btn-primary,
+      .btn-secondary {
+        width: 100%;
+      }
+      
+      .toast {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+      }
+      
+      .editor-toolbar {
+        gap: 6px;
+        padding: 10px;
+      }
+      
+      .toolbar-btn {
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body class="h-full"><button class="menu-toggle" id="menu-toggle"> <span></span> <span></span> <span></span> </button>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <div class="book-container"><!-- Sidebar -->
+   <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+     <div class="sidebar-title" id="sidebar-book-title">
+      Il Mio Libro
+     </div>
+     <div class="page-count" id="page-count">
+      0 pagine
+     </div>
+    </div>
+    <div class="pages-list" id="pages-list">
+     <div class="no-pages">
+      Nessuna pagina ancora
+     </div>
+    </div><button class="add-page-btn" id="add-page-btn">+ Nuova Pagina</button>
+   </aside><!-- Main Content -->
+   <main class="main-content">
+    <div class="top-bar">
+     <h1 class="book-title" id="main-book-title">Il Mio Libro di Grammatica</h1>
+     <div class="top-actions"><button class="btn btn-export" id="export-btn">📥 Esporta HTML</button>
+     </div>
+    </div>
+    <div class="content-area" id="content-area">
+     <div class="page-view">
+      <div class="empty-state">
+       <div class="empty-icon">
+        📖
+       </div>
+       <div class="empty-title">
+        Inizia il Tuo Libro
+       </div>
+       <div class="empty-text">
+        Crea la tua prima pagina grammaticale cliccando su "Nuova Pagina"
+       </div>
+      </div>
+     </div>
+    </div>
+   </main>
+  </div>
+  <script>
+    const defaultConfig = {
+      book_title: "Il Mio Libro di Grammatica",
+      add_page_label: "+ Nuova Pagina",
+      background_color: "#667eea",
+      surface_color: "#ffffff",
+      text_color: "#2c3e50",
+      primary_action_color: "#667eea",
+      secondary_action_color: "#27ae60",
+      font_family: "Georgia",
+      font_size: 16
+    };
+
+    let pages = loadPages();
+    let currentPageId = null;
+    let viewMode = 'view';
+
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+    function toggleMenu() {
+      menuToggle.classList.toggle('active');
+      sidebar.classList.toggle('active');
+      sidebarOverlay.classList.toggle('active');
+    }
+
+    function closeMenu() {
+      menuToggle.classList.remove('active');
+      sidebar.classList.remove('active');
+      sidebarOverlay.classList.remove('active');
+    }
+
+    menuToggle.addEventListener('click', toggleMenu);
+    sidebarOverlay.addEventListener('click', closeMenu);
+
+    function loadPages() {
+      try {
+        const saved = localStorage.getItem('grammarBookPages');
+        return saved ? JSON.parse(saved) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function savePages() {
+      try {
+        localStorage.setItem('grammarBookPages', JSON.stringify(pages));
+      } catch (e) {
+        showToast('Errore nel salvataggio locale', 'error');
+      }
+    }
+
+    async function onConfigChange(config) {
+      const fontSize = config.font_size || defaultConfig.font_size;
+      const fontFamily = config.font_family || defaultConfig.font_family;
+
+      document.body.style.fontSize = `${fontSize}px`;
+      document.body.style.fontFamily = `${fontFamily}, Georgia, serif`;
+
+      const bookTitle = config.book_title || defaultConfig.book_title;
+      document.getElementById('main-book-title').textContent = bookTitle;
+      document.getElementById('sidebar-book-title').textContent = bookTitle;
+      
+      const addPageLabel = config.add_page_label || defaultConfig.add_page_label;
+      document.getElementById('add-page-btn').textContent = addPageLabel;
+
+      if (viewMode === 'view' && currentPageId) {
+        renderPageView();
+      }
+    }
+
+    function renderSidebar() {
+      const pagesList = document.getElementById('pages-list');
+      const pageCount = document.getElementById('page-count');
+      
+      pageCount.textContent = `${pages.length} ${pages.length === 1 ? 'pagina' : 'pagine'}`;
+      
+      if (pages.length === 0) {
+        pagesList.innerHTML = '<div class="no-pages">Nessuna pagina ancora</div>';
+        return;
+      }
+
+      const grouped = {};
+      pages.forEach(page => {
+        const cat = page.category || 'Generale';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(page);
+      });
+
+      let html = '';
+      Object.keys(grouped).sort().forEach(category => {
+        html += `<div class="category-group">
+          <div class="category-title">${escapeHtml(category)}</div>`;
+        grouped[category].forEach(page => {
+          const isActive = page.id === currentPageId ? 'active' : '';
+          html += `<div class="page-item ${isActive}" onclick="showPage('${page.id}')">${escapeHtml(page.title)}</div>`;
+        });
+        html += '</div>';
+      });
+
+      pagesList.innerHTML = html;
+    }
+
+    function showEmptyState() {
+      viewMode = 'view';
+      currentPageId = null;
+      const contentArea = document.getElementById('content-area');
+      contentArea.innerHTML = `
+        <div class="page-view">
+          <div class="empty-state">
+            <div class="empty-icon">📖</div>
+            <div class="empty-title">Inizia il Tuo Libro</div>
+            <div class="empty-text">Crea la tua prima pagina grammaticale cliccando su "Nuova Pagina"</div>
+          </div>
+        </div>`;
+    }
+
+    window.showPage = function(pageId) {
+      const page = pages.find(p => p.id === pageId);
+      if (!page) return;
+      
+      currentPageId = pageId;
+      viewMode = 'view';
+      renderSidebar();
+      renderPageView();
+      closeMenu();
+    };
+
+    function renderPageView() {
+      const page = pages.find(p => p.id === currentPageId);
+      if (!page) return;
+
+      const contentArea = document.getElementById('content-area');
+      contentArea.innerHTML = `
+        <div class="page-view">
+          <div class="page-header">
+            <h2 class="page-title">${escapeHtml(page.title)}</h2>
+            ${page.category ? `<span class="page-category">${escapeHtml(page.category)}</span>` : ''}
+          </div>
+          <div class="page-content">${page.content}</div>
+          <div class="page-actions">
+            <button class="btn btn-edit" onclick="editPage('${page.id}')">✏️ Modifica</button>
+            <button class="btn btn-delete" onclick="deletePage('${page.id}')">🗑️ Elimina</button>
+          </div>
+        </div>`;
+    }
+
+    function createEditor() {
+      return `
+        <div class="editor-toolbar">
+          <button type="button" class="toolbar-btn" onclick="formatBold()">🅱️ Grassetto</button>
+          <button type="button" class="toolbar-btn" onclick="formatItalic()">📐 Corsivo</button>
+          <button type="button" class="toolbar-btn" onclick="insertHeading()">📌 Titolo</button>
+          <button type="button" class="toolbar-btn" onclick="insertBulletList()">• Lista</button>
+          <button type="button" class="toolbar-btn" onclick="insertNumberList()">🔢 Lista Num.</button>
+          <button type="button" class="toolbar-btn" onclick="showTableModal()">📊 Tabella</button>
+        </div>
+        <div class="content-editor" id="content-editor" contenteditable="true"></div>
+      `;
+    }
+
+    window.formatBold = function() {
+      document.execCommand('bold', false, null);
+      document.getElementById('content-editor').focus();
+    };
+
+    window.formatItalic = function() {
+      document.execCommand('italic', false, null);
+      document.getElementById('content-editor').focus();
+    };
+
+    window.insertBulletList = function() {
+      document.execCommand('insertUnorderedList', false, null);
+      document.getElementById('content-editor').focus();
+    };
+
+    window.insertNumberList = function() {
+      document.execCommand('insertOrderedList', false, null);
+      document.getElementById('content-editor').focus();
+    };
+
+    window.insertHeading = function() {
+      const selection = window.getSelection();
+      if (selection.rangeCount === 0) return;
+      
+      const range = selection.getRangeAt(0);
+      const h3 = document.createElement('h3');
+      h3.textContent = 'Titolo';
+      range.deleteContents();
+      range.insertNode(h3);
+      
+      const newRange = document.createRange();
+      newRange.selectNodeContents(h3);
+      selection.removeAllRanges();
+      selection.addRange(newRange);
+      document.getElementById('content-editor').focus();
+    };
+
+    window.showTableModal = function() {
+      const modal = document.createElement('div');
+      modal.className = 'table-modal';
+      modal.innerHTML = `
+        <div class="table-modal-content">
+          <h3>Crea Tabella</h3>
+          <div class="form-group">
+            <label class="form-label" for="table-rows">Numero di righe</label>
+            <input type="number" id="table-rows" class="form-input" value="3" min="1" max="20">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="table-cols">Numero di colonne</label>
+            <input type="number" id="table-cols" class="form-input" value="3" min="1" max="10">
+          </div>
+          <div class="table-modal-actions">
+            <button class="btn btn-primary" onclick="insertTable()">Crea</button>
+            <button class="btn btn-secondary" onclick="closeTableModal()">Annulla</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    };
+
+    window.closeTableModal = function() {
+      const modal = document.querySelector('.table-modal');
+      if (modal) modal.remove();
+    };
+
+    window.insertTable = function() {
+      const rows = parseInt(document.getElementById('table-rows').value);
+      const cols = parseInt(document.getElementById('table-cols').value);
+      
+      let tableHTML = '<table><thead><tr>';
+      for (let i = 0; i < cols; i++) {
+        tableHTML += `<th>Intestazione ${i + 1}</th>`;
+      }
+      tableHTML += '</tr></thead><tbody>';
+      
+      for (let i = 0; i < rows - 1; i++) {
+        tableHTML += '<tr>';
+        for (let j = 0; j < cols; j++) {
+          tableHTML += '<td>Dati</td>';
+        }
+        tableHTML += '</tr>';
+      }
+      tableHTML += '</tbody></table><p><br></p>';
+      
+      document.execCommand('insertHTML', false, tableHTML);
+      closeTableModal();
+      document.getElementById('content-editor').focus();
+    };
+
+    function showAddForm() {
+      viewMode = 'add';
+      closeMenu();
+      const contentArea = document.getElementById('content-area');
+      contentArea.innerHTML = `
+        <div class="page-view">
+          <div class="page-header">
+            <h2 class="page-title">Nuova Pagina</h2>
+          </div>
+          <form class="form-container" id="add-form">
+            <div class="form-group">
+              <label class="form-label" for="new-title">Titolo della Pagina</label>
+              <input type="text" id="new-title" class="form-input" placeholder="es. Il Presente Indicativo" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-category">Categoria</label>
+              <input type="text" id="new-category" class="form-input" placeholder="es. Verbi, Sostantivi, Sintassi...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contenuto</label>
+              ${createEditor()}
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">✓ Salva Pagina</button>
+              <button type="button" class="btn btn-secondary" onclick="cancelForm()">✗ Annulla</button>
+            </div>
+          </form>
+        </div>`;
+
+      document.getElementById('add-form').onsubmit = handleAddSubmit;
+    }
+
+    function handleAddSubmit(e) {
+      e.preventDefault();
+
+      const title = document.getElementById('new-title').value.trim();
+      const category = document.getElementById('new-category').value.trim();
+      const content = document.getElementById('content-editor').innerHTML.trim();
+
+      if (!title || !content) return;
+
+      const newPage = {
+        id: `page-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        title,
+        category,
+        content,
+        order: pages.length,
+        createdAt: new Date().toISOString()
+      };
+
+      pages.push(newPage);
+      savePages();
+      
+      showToast('Pagina creata con successo!');
+      currentPageId = newPage.id;
+      viewMode = 'view';
+      renderSidebar();
+      renderPageView();
+    }
+
+    window.editPage = function(pageId) {
+      const page = pages.find(p => p.id === pageId);
+      if (!page) return;
+
+      viewMode = 'edit';
+      const contentArea = document.getElementById('content-area');
+      contentArea.innerHTML = `
+        <div class="page-view">
+          <div class="page-header">
+            <h2 class="page-title">Modifica Pagina</h2>
+          </div>
+          <form class="form-container" id="edit-form">
+            <div class="form-group">
+              <label class="form-label" for="edit-title">Titolo della Pagina</label>
+              <input type="text" id="edit-title" class="form-input" value="${escapeHtml(page.title)}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-category">Categoria</label>
+              <input type="text" id="edit-category" class="form-input" value="${escapeHtml(page.category || '')}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contenuto</label>
+              ${createEditor()}
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">✓ Salva Modifiche</button>
+              <button type="button" class="btn btn-secondary" onclick="showPage('${pageId}')">✗ Annulla</button>
+            </div>
+          </form>
+        </div>`;
+
+      document.getElementById('content-editor').innerHTML = page.content;
+      document.getElementById('edit-form').onsubmit = (e) => handleEditSubmit(e, page);
+    };
+
+    function handleEditSubmit(e, originalPage) {
+      e.preventDefault();
+
+      const title = document.getElementById('edit-title').value.trim();
+      const category = document.getElementById('edit-category').value.trim();
+      const content = document.getElementById('content-editor').innerHTML.trim();
+
+      if (!title || !content) return;
+
+      const pageIndex = pages.findIndex(p => p.id === originalPage.id);
+      if (pageIndex !== -1) {
+        pages[pageIndex] = {
+          ...originalPage,
+          title,
+          category,
+          content
+        };
+        savePages();
+        showToast('Pagina aggiornata!');
+        showPage(originalPage.id);
+      }
+    }
+
+    window.deletePage = function(pageId) {
+      const page = pages.find(p => p.id === pageId);
+      if (!page) return;
+
+      const deleteBtn = document.querySelector('.btn-delete');
+      
+      if (deleteBtn.textContent.includes('Conferma')) {
+        pages = pages.filter(p => p.id !== pageId);
+        savePages();
+        
+        showToast('Pagina eliminata');
+        if (pages.length > 0) {
+          showPage(pages[0].id);
+        } else {
+          showEmptyState();
+        }
+      } else {
+        deleteBtn.textContent = '⚠️ Conferma Eliminazione';
+        deleteBtn.style.background = '#c0392b';
+        
+        setTimeout(() => {
+          if (deleteBtn && deleteBtn.textContent.includes('Conferma')) {
+            deleteBtn.textContent = '🗑️ Elimina';
+            deleteBtn.style.background = '#e74c3c';
+          }
+        }, 3000);
+      }
+    };
+
+    window.cancelForm = function() {
+      if (pages.length > 0) {
+        if (currentPageId) {
+          showPage(currentPageId);
+        } else {
+          showPage(pages[0].id);
+        }
+      } else {
+        showEmptyState();
+      }
+    };
+
+    document.getElementById('add-page-btn').onclick = showAddForm;
+
+    document.getElementById('export-btn').onclick = function() {
+      if (pages.length === 0) {
+        showToast('Nessuna pagina da esportare', 'error');
+        return;
+      }
+
+      const config = window.elementSdk?.config || defaultConfig;
+      const bookTitle = config.book_title || defaultConfig.book_title;
+      
+      let html = `<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(bookTitle)}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Georgia, serif; line-height: 1.8; color: #2c3e50; background: #f8f9fa; padding: 40px 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    .cover { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 80px 60px; border-radius: 12px; text-align: center; margin-bottom: 40px; }
+    .cover h1 { font-size: 48px; margin-bottom: 20px; }
+    .toc { background: white; padding: 40px; border-radius: 12px; margin-bottom: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .toc h2 { font-size: 32px; margin-bottom: 24px; color: #2c3e50; }
+    .toc-category { margin-bottom: 24px; }
+    .toc-category-title { font-weight: 700; color: #667eea; margin-bottom: 12px; font-size: 18px; }
+    .toc a { display: block; padding: 8px 0; color: #34495e; text-decoration: none; transition: color 0.2s; }
+    .toc a:hover { color: #667eea; }
+    .page { background: white; padding: 60px; border-radius: 12px; margin-bottom: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); page-break-inside: avoid; }
+    .page-title { font-size: 36px; font-weight: 700; margin-bottom: 16px; color: #2c3e50; }
+    .page-category { display: inline-block; padding: 6px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px; font-size: 14px; margin-bottom: 24px; }
+    .page-content { font-size: 18px; color: #34495e; }
+    .page-content table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    .page-content table td, .page-content table th { border: 2px solid #667eea; padding: 12px; text-align: left; }
+    .page-content table th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 700; }
+    .page-content ul, .page-content ol { margin: 16px 0; padding-left: 32px; }
+    .page-content li { margin: 8px 0; }
+    .page-content h3 { font-size: 28px; margin: 24px 0 16px 0; color: #667eea; font-weight: 700; }
+    .page-content strong { font-weight: 700; color: #2c3e50; }
+    .page-content em { font-style: italic; }
+    @media print { body { background: white; } .page { box-shadow: none; page-break-after: always; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="cover">
+      <h1>${escapeHtml(bookTitle)}</h1>
+      <p style="font-size: 20px; opacity: 0.9;">${pages.length} ${pages.length === 1 ? 'Pagina' : 'Pagine'}</p>
+    </div>
+    
+    <div class="toc">
+      <h2>📚 Indice</h2>`;
+
+      const grouped = {};
+      pages.forEach(page => {
+        const cat = page.category || 'Generale';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(page);
+      });
+
+      Object.keys(grouped).sort().forEach(category => {
+        html += `<div class="toc-category"><div class="toc-category-title">${escapeHtml(category)}</div>`;
+        grouped[category].forEach(page => {
+          html += `<a href="#page-${page.id}">${escapeHtml(page.title)}</a>`;
+        });
+        html += '</div>';
+      });
+
+      html += `</div>`;
+
+      pages.forEach(page => {
+        html += `
+    <div class="page" id="page-${page.id}">
+      <h2 class="page-title">${escapeHtml(page.title)}</h2>
+      ${page.category ? `<span class="page-category">${escapeHtml(page.category)}</span>` : ''}
+      <div class="page-content">${page.content}</div>
+    </div>`;
+      });
+
+      html += `
+  </div>
+</body>
+</html>`;
+
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${bookTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      showToast('Libro esportato con successo!');
+    };
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text || '';
+      return div.innerHTML;
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    function init() {
+      renderSidebar();
+      if (pages.length === 0) {
+        showEmptyState();
+      } else if (pages.length > 0) {
+        showPage(pages[0].id);
+      }
+
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange,
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.background_color || defaultConfig.background_color,
+                set: (value) => {
+                  config.background_color = value;
+                  window.elementSdk.setConfig({ background_color: value });
+                }
+              },
+              {
+                get: () => config.surface_color || defaultConfig.surface_color,
+                set: (value) => {
+                  config.surface_color = value;
+                  window.elementSdk.setConfig({ surface_color: value });
+                }
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (value) => {
+                  config.text_color = value;
+                  window.elementSdk.setConfig({ text_color: value });
+                }
+              },
+              {
+                get: () => config.primary_action_color || defaultConfig.primary_action_color,
+                set: (value) => {
+                  config.primary_action_color = value;
+                  window.elementSdk.setConfig({ primary_action_color: value });
+                }
+              },
+              {
+                get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+                set: (value) => {
+                  config.secondary_action_color = value;
+                  window.elementSdk.setConfig({ secondary_action_color: value });
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => config.font_family || defaultConfig.font_family,
+              set: (value) => {
+                config.font_family = value;
+                window.elementSdk.setConfig({ font_family: value });
+              }
+            },
+            fontSizeable: {
+              get: () => config.font_size || defaultConfig.font_size,
+              set: (value) => {
+                config.font_size = value;
+                window.elementSdk.setConfig({ font_size: value });
+              }
+            }
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ['book_title', config.book_title || defaultConfig.book_title],
+            ['add_page_label', config.add_page_label || defaultConfig.add_page_label]
+          ])
+        });
+      }
+    }
+
+    init();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b9663ca37d1e898',t:'MTc2NzY1MTkwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
