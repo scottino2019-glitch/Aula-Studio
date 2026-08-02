@@ -1,0 +1,6 @@
+{
+  "name": "App Studio - Study Home",
+  "description": "Notebook PWA per organizzare lo studio, note, avanzamento, mood e risorse.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
