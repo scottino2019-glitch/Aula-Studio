@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Download, Upload, FileText, X, Globe, Wifi, WifiOff, CheckCircle2, Plus } from 'lucide-react';
+import { PdfViewer } from './components/PdfViewer';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -20,6 +21,7 @@ export default function App() {
 
   const [pdfList, setPdfList] = useState<Array<{ name: string; url?: string }>>(defaultPdfs);
   const [selectedPdf, setSelectedPdf] = useState<{ name: string; url?: string } | null>(null);
+  const [selectedPdfData, setSelectedPdfData] = useState<ArrayBuffer | undefined>(undefined);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   // App Link Viewer Modal State
@@ -142,18 +144,24 @@ export default function App() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const fileUrl = URL.createObjectURL(file);
-    const newItem = { name: file.name, url: fileUrl };
-    const updated = [newItem, ...pdfList];
-    setPdfList(updated);
-    
-    // Save metadata with URL or name
-    const toSave = updated.map(item => ({ name: item.name, url: item.url }));
-    localStorage.setItem('custom-pdf-list', JSON.stringify(toSave));
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const buffer = event.target?.result as ArrayBuffer;
+      const fileUrl = URL.createObjectURL(file);
+      const newItem = { name: file.name, url: fileUrl };
+      const updated = [newItem, ...pdfList];
+      setPdfList(updated);
+      
+      // Save metadata with name
+      const toSave = updated.map(item => ({ name: item.name }));
+      localStorage.setItem('custom-pdf-list', JSON.stringify(toSave));
 
-    // Open uploaded file directly
-    setSelectedPdf(newItem);
-    setIsPdfModalOpen(true);
+      // Open uploaded file directly in canvas viewer
+      setSelectedPdf(newItem);
+      setSelectedPdfData(buffer);
+      setIsPdfModalOpen(true);
+    };
+    reader.readAsArrayBuffer(file);
   };
 
   // Open PDF Reader
@@ -161,6 +169,7 @@ export default function App() {
     const target = pdf || pdfList[0] || defaultPdfs[0];
     const pdfUrl = target.url || `/${target.name}`;
     setSelectedPdf({ ...target, url: pdfUrl });
+    setSelectedPdfData(undefined);
     setIsPdfModalOpen(true);
   };
 
@@ -328,73 +337,17 @@ export default function App() {
         </div>
       </div>
 
-      {/* PDF Reader Modal */}
-      {isPdfModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsPdfModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b pb-3 mb-4">
-              <div className="flex items-center gap-2">
-                <FileText className="text-orange-500" size={24} />
-                <h3 className="text-xl font-bold m-0">Lettore PDF: {selectedPdf?.name || 'Documento'}</h3>
-              </div>
-              <div className="flex items-center gap-2">
-                {selectedPdf?.url && (
-                  <a
-                    href={selectedPdf.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs bg-orange-100 hover:bg-orange-200 text-orange-800 px-3 py-1.5 rounded-lg font-sans font-semibold transition"
-                  >
-                    Apri in nuova scheda ↗
-                  </a>
-                )}
-                <button
-                  onClick={() => setIsPdfModalOpen(false)}
-                  className="p-1.5 rounded-full hover:bg-gray-100 text-gray-600 transition"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-            </div>
-
-            <div className="flex-1 min-h-[400px] bg-slate-100 rounded-xl p-4 flex flex-col items-center justify-center text-center">
-              {selectedPdf?.url ? (
-                <iframe
-                  src={selectedPdf.url}
-                  className="w-full h-[500px] border-0 rounded-lg shadow-sm"
-                  title="PDF Reader"
-                />
-              ) : (
-                <div className="max-w-md p-6 bg-white rounded-xl shadow-sm border border-gray-200">
-                  <FileText size={48} className="mx-auto text-orange-400 mb-3" />
-                  <h4 className="text-lg font-bold mb-2">{selectedPdf?.name}</h4>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Il lettore PDF integrato è pronto. Puoi visualizzare e leggere qualsiasi documento PDF caricato o selezionato sul tuo dispositivo.
-                  </p>
-                  <label className="pdf-btn m-0 inline-flex cursor-pointer">
-                    <Upload size={16} /> Seleziona un file PDF dal tuo dispositivo
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      className="hidden"
-                      onChange={handlePdfUpload}
-                    />
-                  </label>
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-between items-center mt-4 pt-3 border-t text-sm text-gray-500">
-              <span>App Studio PDF Viewer</span>
-              <button
-                onClick={() => setIsPdfModalOpen(false)}
-                className="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition font-sans text-xs font-semibold"
-              >
-                Chiudi Lettore
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* PDF Canvas Reader (In-App, No Download) */}
+      {isPdfModalOpen && selectedPdf && (
+        <PdfViewer
+          url={selectedPdf.url}
+          fileData={selectedPdfData}
+          title={selectedPdf.name}
+          onClose={() => {
+            setIsPdfModalOpen(false);
+            setSelectedPdfData(undefined);
+          }}
+        />
       )}
 
       {/* Embedded Sub-App Viewer Modal */}
