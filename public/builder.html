@@ -1,0 +1,2871 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinguaBuilder - Editor Drag & Drop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .app-header {
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .lesson-title-input {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            width: 200px;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* Layout */
+        .main-layout {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            width: 320px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+        }
+
+        .sidebar-content {
+            padding: 1.5rem;
+        }
+
+        .sidebar-title {
+            font-size: 1.125rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 0.75rem;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        .elements-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        /* Element Cards */
+        .element-card {
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: move;
+            border: 1px solid;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .element-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .element-card.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+        }
+
+        .element-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .element-icon {
+            font-size: 1.25rem;
+        }
+
+        .element-info h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .element-info p {
+            font-size: 0.75rem;
+        }
+
+        /* Element Type Colors */
+        .element-header-type {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            border-color: #93c5fd;
+            color: #1e40af;
+        }
+
+        .element-vocabulary {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            border-color: #93c5fd;
+            color: #1e40af;
+        }
+
+        .element-quiz {
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            border-color: #6ee7b7;
+            color: #065f46;
+        }
+
+        .element-grammar {
+            background: linear-gradient(135deg, #e9d5ff, #d8b4fe);
+            border-color: #c084fc;
+            color: #581c87;
+        }
+
+        .element-lesson {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-color: #0ea5e9;
+            color: #0c4a6e;
+        }
+
+        .element-text {
+            background: linear-gradient(135deg, #fed7aa, #fdba74);
+            border-color: #fb923c;
+            color: #9a3412;
+        }
+
+        .element-fillblank {
+            background: linear-gradient(135deg, #fecaca, #fca5a5);
+            border-color: #f87171;
+            color: #991b1b;
+        }
+
+        .element-freetext {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border-color: #22c55e;
+            color: #15803d;
+        }
+
+        .element-dragdrop {
+            background: linear-gradient(135deg, #fdf4ff, #f3e8ff);
+            border-color: #a855f7;
+            color: #7c2d12;
+        }
+
+        .element-audio {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-color: #facc15;
+            color: #92400e;
+        }
+
+        /* Workspace */
+        .workspace {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .workspace-content {
+            padding: 1.5rem;
+        }
+
+        .build-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-height: calc(100vh - 200px);
+        }
+
+        .build-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .build-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .build-subtitle {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .drop-zone {
+            padding: 1.5rem;
+            min-height: 400px;
+            border: 2px dashed #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #9ca3af;
+            padding: 4rem 0;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.125rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-text {
+            font-size: 0.875rem;
+        }
+
+        /* Lesson Elements */
+        .lesson-element {
+            margin-bottom: 1rem;
+            animation: fadeIn 0.3s ease-in;
+            position: relative;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .element-controls {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .control-btn {
+            padding: 4px 6px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .edit-btn {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: #2563eb;
+        }
+
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+
+        /* Element Styles */
+        .element-content {
+            border-radius: 8px;
+            padding: 1rem;
+            border-left: 4px solid;
+        }
+
+        .element-content.header-element {
+            background: #f8fafc;
+            border-left-color: #64748b;
+        }
+
+        .element-content.vocabulary-element {
+            background: #dbeafe;
+            border-left-color: #3b82f6;
+        }
+
+        .element-content.quiz-element {
+            background: #d1fae5;
+            border-left-color: #10b981;
+        }
+
+        .element-content.grammar-element {
+            background: #e9d5ff;
+            border-left-color: #8b5cf6;
+        }
+
+        .element-content.lesson-element {
+            background: #f0f9ff;
+            border-left-color: #0ea5e9;
+        }
+
+        .element-content.text-element {
+            background: #fed7aa;
+            border-left-color: #f97316;
+        }
+
+        .element-content.fillblank-element {
+            background: #fecaca;
+            border-left-color: #ef4444;
+        }
+
+        .element-content.freetext-element {
+            background: #f0fdf4;
+            border-left-color: #22c55e;
+        }
+
+        .element-content.dragdrop-element {
+            background: #fdf4ff;
+            border-left-color: #a855f7;
+        }
+
+        .element-content.audio-element {
+            background: #fef3c7;
+            border-left-color: #eab308;
+        }
+
+        .element-title {
+            font-size: 1.125rem;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .element-body {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+        }
+
+        /* Vocabulary Grid */
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .vocab-card {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .vocab-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .foreign-word {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #3b82f6;
+        }
+
+        .speak-btn {
+            background: none;
+            border: none;
+            color: #3b82f6;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .speak-btn:hover {
+            color: #2563eb;
+        }
+
+        .italian-word {
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+
+        .example-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        /* Quiz Styles */
+        .quiz-question {
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .quiz-option {
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            background: #f9fafb;
+        }
+
+        .quiz-result {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .quiz-result.show {
+            display: block;
+        }
+
+        /* Free Text Exercise Styles */
+        .freetext-question {
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+
+        .freetext-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 0.75rem;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 1rem;
+        }
+
+        .freetext-input:focus {
+            outline: none;
+            border-color: #22c55e;
+        }
+
+        .check-answer-btn {
+            background: #22c55e;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .check-answer-btn:hover {
+            background: #16a34a;
+        }
+
+        .answer-feedback {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .answer-feedback.show {
+            display: block;
+        }
+
+        /* Drag & Drop Styles */
+        .dragdrop-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .drag-items, .drop-zones {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 6px;
+            min-height: 200px;
+        }
+
+        .drag-items h4, .drop-zones h4 {
+            margin-bottom: 0.75rem;
+            color: #374151;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .draggable-item {
+            background: #a855f7;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            cursor: move;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .draggable-item:hover {
+            background: #9333ea;
+        }
+
+        .draggable-item.dragging {
+            opacity: 0.5;
+        }
+
+        .drop-zone-item {
+            border: 2px dashed #d1d5db;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .drop-zone-item.drag-over {
+            border-color: #a855f7;
+            background: #faf5ff;
+        }
+
+        .drop-zone-item.filled {
+            background: #f0fdf4;
+            border-color: #22c55e;
+        }
+
+        .dragdrop-check-btn {
+            background: #a855f7;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 1rem;
+        }
+
+        .dragdrop-check-btn:hover {
+            background: #9333ea;
+        }
+
+        /* Fill in the Blanks Styles */
+        .fillblank-text {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .blank-input {
+            display: inline-block;
+            border: none;
+            border-bottom: 2px solid #ef4444;
+            background: transparent;
+            padding: 0.25rem 0.5rem;
+            margin: 0 0.25rem;
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #ef4444;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .blank-input:focus {
+            outline: none;
+            border-bottom-color: #dc2626;
+        }
+
+        .blank-input.correct {
+            border-bottom-color: #22c55e;
+            color: #22c55e;
+        }
+
+        .blank-input.incorrect {
+            border-bottom-color: #ef4444;
+            color: #ef4444;
+            background: #fee2e2;
+        }
+
+        .fillblank-check-btn {
+            background: #ef4444;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 1rem;
+        }
+
+        .fillblank-check-btn:hover {
+            background: #dc2626;
+        }
+
+        .fillblank-words {
+            background: #fef2f2;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .fillblank-words h4 {
+            font-size: 0.875rem;
+            color: #991b1b;
+            margin-bottom: 0.5rem;
+        }
+
+        .word-bank {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .bank-word {
+            background: white;
+            color: #ef4444;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            border: 1px solid #fca5a5;
+        }
+
+        /* Lesson Styles */
+        .lesson-objective {
+            background: #e0f2fe;
+            border: 1px solid #0ea5e9;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .dialogue-container {
+            background: #f8fafc;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .dialogue-line {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+        }
+
+        .dialogue-line.speaker-a {
+            background: #dbeafe;
+            align-items: flex-start;
+        }
+
+        .dialogue-line.speaker-b {
+            background: #dcfce7;
+            align-items: flex-end;
+        }
+
+        .dialogue-text {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dialogue-translation {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .key-phrases {
+            background: #fef3c7;
+            border-radius: 6px;
+            padding: 1rem;
+        }
+
+        .phrase-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .phrase-text {
+            font-weight: 500;
+            color: #0ea5e9;
+        }
+
+        .phrase-translation {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .phrase-usage {
+            font-size: 0.75rem;
+            color: #92400e;
+            background: #fef3c7;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+            width: 600px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-title {
+            font-size: 1.125rem;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6b7280;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #374151;
+            background: none;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            resize: vertical;
+        }
+
+        /* Export Modal */
+        .export-info {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+
+        .export-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .copy-success {
+            margin-left: 0.75rem;
+            color: #16a34a;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .copy-success.show {
+            display: inline;
+        }
+
+        .hidden-textarea {
+            position: absolute;
+            left: -9999px;
+            opacity: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+
+            .header-controls {
+                flex-wrap: wrap;
+            }
+
+            .lesson-title-input {
+                width: 150px;
+            }
+
+            .vocab-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dragdrop-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">🌍</div>
+                <h1 class="logo-text">LinguaBuilder</h1>
+            </div>
+            <div class="header-controls">
+                <input type="text" id="lessonTitle" placeholder="Nome lezione..." 
+                       class="lesson-title-input" value="La Mia Lezione">
+                <button id="previewBtn" class="btn btn-success">
+                    👁️ Anteprima
+                </button>
+                <button id="exportBtn" class="btn btn-primary">
+                    📋 Copia Codice
+                </button>
+                <button id="clearAll" class="btn btn-danger">
+                    🗑️ Pulisci
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <!-- Sidebar Elementi -->
+        <div class="sidebar">
+            <div class="sidebar-content">
+                <h2 class="sidebar-title">🧩 Elementi</h2>
+                <p class="sidebar-subtitle">Trascina per aggiungere alla lezione</p>
+                
+                <div class="elements-grid">
+                    <!-- Header Element -->
+                    <div class="element-card element-header-type" draggable="true" data-type="header">
+                        <div class="element-header">
+                            <div class="element-icon">📋</div>
+                            <div class="element-info">
+                                <h3>Header Lezione</h3>
+                                <p>Titolo e intestazione</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contenuto Lezione -->
+                    <div class="element-card element-lesson" draggable="true" data-type="lesson">
+                        <div class="element-header">
+                            <div class="element-icon">🎓</div>
+                            <div class="element-info">
+                                <h3>Contenuto Lezione</h3>
+                                <p>Spiegazioni e dialoghi</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Vocabolario -->
+                    <div class="element-card element-vocabulary" draggable="true" data-type="vocabulary">
+                        <div class="element-header">
+                            <div class="element-icon">📝</div>
+                            <div class="element-info">
+                                <h3>Card Vocabolario</h3>
+                                <p>Parole con traduzioni</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quiz -->
+                    <div class="element-card element-quiz" draggable="true" data-type="quiz">
+                        <div class="element-header">
+                            <div class="element-icon">🎯</div>
+                            <div class="element-info">
+                                <h3>Quiz Interattivo</h3>
+                                <p>Domande a scelta multipla</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Esercizio Risposta Libera -->
+                    <div class="element-card element-freetext" draggable="true" data-type="freetext">
+                        <div class="element-header">
+                            <div class="element-icon">✍️</div>
+                            <div class="element-info">
+                                <h3>Risposta Libera</h3>
+                                <p>Domande aperte con feedback</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Esercizio Drag & Drop -->
+                    <div class="element-card element-dragdrop" draggable="true" data-type="dragdrop">
+                        <div class="element-header">
+                            <div class="element-icon">🎯</div>
+                            <div class="element-info">
+                                <h3>Drag & Drop</h3>
+                                <p>Trascina per abbinare</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Riempimento Testi -->
+                    <div class="element-card element-fillblank" draggable="true" data-type="fillblank">
+                        <div class="element-header">
+                            <div class="element-icon">📝</div>
+                            <div class="element-info">
+                                <h3>Riempimento Testi</h3>
+                                <p>Completa le frasi</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grammatica -->
+                    <div class="element-card element-grammar" draggable="true" data-type="grammar">
+                        <div class="element-header">
+                            <div class="element-icon">📚</div>
+                            <div class="element-info">
+                                <h3>Regola Grammaticale</h3>
+                                <p>Spiegazioni ed esempi</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testo -->
+                    <div class="element-card element-text" draggable="true" data-type="text">
+                        <div class="element-header">
+                            <div class="element-icon">📄</div>
+                            <div class="element-info">
+                                <h3>Blocco Testo</h3>
+                                <p>Testo personalizzabile</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Area di Lavoro -->
+        <div class="workspace">
+            <div class="workspace-content">
+                <div class="build-container">
+                    <div class="build-header">
+                        <h2 class="build-title">🏗️ Area di Costruzione</h2>
+                        <p class="build-subtitle">Trascina gli elementi qui per costruire la lezione</p>
+                    </div>
+                    
+                    <div id="buildArea" class="drop-zone">
+                        <div class="empty-state" id="emptyState">
+                            <div class="empty-icon">🎯</div>
+                            <h3 class="empty-title">Inizia a Costruire</h3>
+                            <p class="empty-text">Trascina gli elementi dalla barra laterale per creare la tua lezione</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editor -->
+    <div id="elementModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle" class="modal-title">Modifica Elemento</h3>
+                <button id="closeModal" class="close-btn">&times;</button>
+            </div>
+            <div id="modalContent" class="modal-body">
+                <!-- Contenuto dinamico -->
+            </div>
+            <div class="modal-footer">
+                <button id="cancelEdit" class="btn">Annulla</button>
+                <button id="saveEdit" class="btn btn-primary">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Anteprima -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Anteprima Lezione</h3>
+                <button id="closePreview" class="close-btn">&times;</button>
+            </div>
+            <div id="previewContent" class="modal-body">
+                <!-- Anteprima qui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Esportazione -->
+    <div id="exportModal" class="modal">
+        <div class="modal-content" style="max-width: 90vw; width: 900px;">
+            <div class="modal-header">
+                <h3 class="modal-title">📋 Codice HTML della Lezione</h3>
+                <button id="closeExport" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 1rem;">
+                    <h3 style="margin-bottom: 0.5rem; color: #1f2937;">Codice Pronto!</h3>
+                    <p style="margin-bottom: 1rem; color: #6b7280;">Seleziona tutto il codice qui sotto e copialo (Ctrl+A, poi Ctrl+C):</p>
+                </div>
+                <div style="position: relative;">
+                    <pre id="exportCodeDisplay" style="
+                        background: #f8f9fa; 
+                        border: 1px solid #e9ecef; 
+                        border-radius: 6px; 
+                        padding: 1rem; 
+                        font-family: 'Courier New', monospace; 
+                        font-size: 0.75rem; 
+                        line-height: 1.4; 
+                        max-height: 400px; 
+                        overflow: auto; 
+                        white-space: pre-wrap; 
+                        word-wrap: break-word;
+                        user-select: all;
+                        cursor: text;
+                    "></pre>
+                    <button id="selectAllBtn" style="
+                        position: absolute; 
+                        top: 8px; 
+                        right: 8px; 
+                        background: #3b82f6; 
+                        color: white; 
+                        border: none; 
+                        padding: 0.25rem 0.5rem; 
+                        border-radius: 4px; 
+                        font-size: 0.75rem; 
+                        cursor: pointer;
+                    ">Seleziona Tutto</button>
+                </div>
+                <p style="font-size: 0.875rem; margin-top: 1rem; color: #6b7280;">
+                    💡 Salva il codice in un file con estensione .html (es: lezione.html) e aprilo nel browser
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        let draggedElement = null;
+        let currentEditingElement = null;
+        let elementCounter = 0;
+        let lessonElements = [];
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            setupDragAndDrop();
+            setupEventListeners();
+        });
+
+        // Event Listeners Setup
+        function setupEventListeners() {
+            document.getElementById('clearAll').addEventListener('click', clearAllElements);
+            document.getElementById('previewBtn').addEventListener('click', showPreview);
+            document.getElementById('exportBtn').addEventListener('click', showExportModal);
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+            document.getElementById('closePreview').addEventListener('click', closePreview);
+            document.getElementById('closeExport').addEventListener('click', closeExport);
+            document.getElementById('cancelEdit').addEventListener('click', closeModal);
+            document.getElementById('saveEdit').addEventListener('click', saveElementEdit);
+            document.getElementById('selectAllBtn').addEventListener('click', selectAllCode);
+        }
+
+        // Drag and Drop Setup
+        function setupDragAndDrop() {
+            document.querySelectorAll('[draggable="true"]').forEach(element => {
+                element.addEventListener('dragstart', handleDragStart);
+                element.addEventListener('dragend', handleDragEnd);
+            });
+
+            const buildArea = document.getElementById('buildArea');
+            buildArea.addEventListener('dragover', handleDragOver);
+            buildArea.addEventListener('drop', handleDrop);
+            buildArea.addEventListener('dragenter', handleDragEnter);
+            buildArea.addEventListener('dragleave', handleDragLeave);
+        }
+
+        // Drag Event Handlers
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.setData('text/plain', e.target.dataset.type);
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            document.getElementById('buildArea').classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            if (!e.currentTarget.contains(e.relatedTarget)) {
+                document.getElementById('buildArea').classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('buildArea').classList.remove('drag-over');
+            
+            const elementType = e.dataTransfer.getData('text/plain');
+            if (elementType) {
+                createElement(elementType);
+                hideEmptyState();
+            }
+        }
+
+        // Element Creation
+        function createElement(type) {
+            elementCounter++;
+            const elementId = `element_${elementCounter}`;
+            
+            const elementData = {
+                id: elementId,
+                type: type,
+                ...getDefaultElementData(type)
+            };
+            
+            lessonElements.push(elementData);
+            renderElement(elementData);
+        }
+
+        function getDefaultElementData(type) {
+            const defaults = {
+                header: {
+                    title: 'Titolo della Lezione',
+                    subtitle: 'Sottotitolo o descrizione breve',
+                    level: 'Principiante'
+                },
+                lesson: {
+                    title: 'Contenuto della Lezione',
+                    topic: 'Presentarsi in inglese',
+                    objective: 'Imparare a presentarsi e fare conoscenza',
+                    content: 'In questa lezione imparerai le frasi essenziali per presentarti in inglese.',
+                    dialogue: [
+                        { speaker: 'A', text: 'Hello! My name is Sarah. What\'s your name?', translation: 'Ciao! Il mio nome è Sarah. Come ti chiami?' },
+                        { speaker: 'B', text: 'Hi Sarah! I\'m Marco. Nice to meet you!', translation: 'Ciao Sarah! Sono Marco. Piacere di conoscerti!' },
+                        { speaker: 'A', text: 'Nice to meet you too! Where are you from?', translation: 'Anche per me! Di dove sei?' },
+                        { speaker: 'B', text: 'I\'m from Italy. And you?', translation: 'Sono dall\'Italia. E tu?' }
+                    ],
+                    keyPhrases: [
+                        { phrase: 'My name is...', translation: 'Il mio nome è...', usage: 'Per presentarsi' },
+                        { phrase: 'Nice to meet you', translation: 'Piacere di conoscerti', usage: 'Quando si incontra qualcuno' },
+                        { phrase: 'Where are you from?', translation: 'Di dove sei?', usage: 'Per chiedere la provenienza' }
+                    ]
+                },
+                vocabulary: {
+                    title: 'Nuovo Vocabolario',
+                    words: [
+                        { foreign: 'Hello', italian: 'Ciao', example: 'Hello, how are you?' },
+                        { foreign: 'Thank you', italian: 'Grazie', example: 'Thank you very much!' }
+                    ]
+                },
+                quiz: {
+                    title: 'Quiz Veloce',
+                    question: 'Come si dice "Ciao" in inglese?',
+                    options: ['Hello', 'Goodbye', 'Please', 'Sorry'],
+                    correct: 0,
+                    explanation: 'Hello è il saluto più comune in inglese.'
+                },
+                freetext: {
+                    title: 'Esercizio di Scrittura',
+                    question: 'Scrivi una breve presentazione di te stesso in inglese (almeno 3 frasi)',
+                    sampleAnswer: 'Hello, my name is [Name]. I am from Italy and I am learning English. I like to read books and watch movies.',
+                    feedback: 'Ottimo lavoro! Ricorda di includere: nome, provenienza e qualche interesse personale.'
+                },
+                dragdrop: {
+                    title: 'Abbina le Parole',
+                    instruction: 'Trascina le parole inglesi nelle traduzioni corrette',
+                    pairs: [
+                        { english: 'House', italian: 'Casa' },
+                        { english: 'Car', italian: 'Macchina' },
+                        { english: 'Book', italian: 'Libro' },
+                        { english: 'Water', italian: 'Acqua' }
+                    ]
+                },
+                fillblank: {
+                    title: 'Completa le Frasi',
+                    instruction: 'Riempi gli spazi vuoti con le parole corrette',
+                    text: 'My name ___ John and I ___ from London. I ___ 25 years old.',
+                    answers: ['is', 'am', 'am'],
+                    wordBank: ['is', 'am', 'are', 'have', 'has']
+                },
+                grammar: {
+                    title: 'Regola Grammaticale',
+                    rule: 'Present Simple',
+                    explanation: 'Il Present Simple si usa per esprimere azioni abituali, fatti generali e verità universali.',
+                    formation: 'Soggetto + Verbo (alla forma base) + Complemento',
+                    examples: [
+                        { english: 'I work every day', italian: 'Lavoro ogni giorno' },
+                        { english: 'She speaks English', italian: 'Lei parla inglese' },
+                        { english: 'They live in Rome', italian: 'Vivono a Roma' }
+                    ],
+                    notes: 'Alla terza persona singolare (he/she/it) si aggiunge -s al verbo.'
+                },
+                text: {
+                    title: 'Sezione di Testo',
+                    content: 'Inserisci qui il tuo contenuto personalizzato. Puoi spiegare concetti, dare istruzioni o aggiungere note importanti.'
+                }
+            };
+            return defaults[type] || {};
+        }
+
+        // Element Rendering
+        function renderElement(elementData) {
+            const buildArea = document.getElementById('buildArea');
+            const elementHTML = generateElementHTML(elementData);
+            
+            const elementDiv = document.createElement('div');
+            elementDiv.className = 'lesson-element';
+            elementDiv.innerHTML = elementHTML;
+            
+            buildArea.appendChild(elementDiv);
+            setupElementEvents(elementDiv, elementData);
+        }
+
+        function generateElementHTML(data) {
+            switch(data.type) {
+                case 'header':
+                    return `
+                        <div class="element-content header-element" data-element-id="${data.id}">
+                            <div class="element-controls">
+                                <button class="control-btn edit-btn">✏️</button>
+                                <button class="control-btn delete-btn">🗑️</button>
+                            </div>
+                            <div class="element-title">📋 ${data.title}</div>
+                            <div class="element-body">
+                                <h1 style="font-size: 2rem; font-weight: bold; color: #1f2937; margin-bottom: 0.5rem; text-align: center;">${data.title}</h1>
+                                <p style="font-size: 1.125rem; color: #6b7280; text-align: center; margin-bottom: 0.5rem;">${data.subtitle}</p>
+                                <div style="text-align: center;">
+                                    <span style="background: #e5e7eb; color: #374151; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem;">
+                                        📚 Livello: ${data.level}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                
+                case 'lesson':
+                    return `
+                        <div class="element-content lesson-element" data-element-id="${data.id}">
+                            <div class="element-controls">
+                                <button class="control-btn edit-btn">✏️</button>
+                                <button class="control-btn delete-btn">🗑️</button>
+                            </div>
+                            <div class="element-title">🎓 ${data.title}</div>
+                            <div class="element-body">
+                                <div class="lesson-objective">
+                                    <h4 style="font-size: 0.875rem; font-weight: 600; color: #0c4a6e; margin-bottom: 0.5rem;">🎯 OBIETTIVO:</h4>
+                                    <p style="color: #0c4a6e; margin-bottom: 0.5rem;">${data.objective}</p>
+                                    <p style="color: #374151; font-size: 0.875rem;">${data.content}</p>
+                                </div>
+                                
+                                <div class="dialogue-container">
+                                    <h4 style="font-size: 1rem; font-weight: 600; color: #374151; margin-bottom: 0.75rem;">💬 Dialogo: ${data.topic}</h4>
+                                    ${data.dialogue.map(line => `
+                                        <div class="dialogue-line ${line.speaker === 'A' ? 'speaker-a' : 'speaker-b'}">
+                                            <div class="dialogue-text">
+                                                <strong>${line.speaker}:</strong> ${line.text}
+                                                <button onclick="speakText('${line.text}')" style="background: none; border: none; color: #3b82f6; cursor: pointer;">🔊</button>
+                                            </div>
+                                            <div class="dialogue-translation">${line.translation}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                
+                                <div class="key-phrases">
+                                    <h4 style="font-size: 1rem; font-weight: 600; color: #92400e; margin-bottom: 0.75rem;">🔑 Frasi Chiave</h4>
+                                    ${data.keyPhrases.map(phrase => `
+                                        <div class="phrase-item">
+                                            <div>
+                                                <div class="phrase-text">${phrase.phrase}</div>
+                                                <div class="phrase-translation">${phrase.translation}</div>
+                                            </div>
+                                            <div class="phrase-usage">${phrase.usage}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                
+                case 'vocabulary':
+                    return `
+                        <div class="element-content vocabulary-element" data-element-id="${data.id}">
+                            <div class="element-controls">
+                                <button class="control-btn edit-btn">✏️</button>
+                                <button class="control-btn delete-btn">🗑️</button>
+                            </div>
+                            <div class="element-title">📝 ${data.title}</div>
+                            <div class="element-body">
+                                <div class="vocab-grid">
+                                    ${data.words.map(word => `
+                                        <div class="vocab-card">
+                                            <div class="vocab-header">
+                                                <span class="foreign-word">${word.foreign}</span>
+                                                <button class="speak-btn" onclick="speakText('${word.foreign}')">🔊</button>
+                                            </div>
+                                            <div class="italian-word">${word.italian}</div>
+                                            <div class="example-text">"${word.example}"</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                
+                case 'quiz':
+                    return `
+                        <div class="element-content quiz-element" data-element-id="${data.id}">
+                            <div class="element-controls">
+                                <button class="control-btn edit-btn">✏️</button>
+                                <button class="control-btn delete-btn">🗑️</button>
+                            </div>
+                            <div class="element-title">🎯 ${data.title}</div>
+                            <div class="element-body">
+                                <p class="quiz-question">${data.question}</p>
+                                <div class="quiz-options">
+                                    ${data.options.map((option, index) => `
+                                        <button class="quiz-option" data-index="${index}" data-quiz-id="${data.id}">
+                                            ${String.fromCharCode(65 + index)}. ${option}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                                <div class="quiz-result" id="result-${data.id}">
+                                    <p class="result-text"></p>
+                                    <p class="result-explanation">${data.explanation}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                
+                case 'freetext':
+                    return `
+                        <div class="element-content freetext-element" data-element-id="${data.id}">
+                            <div class="element-controls">
+                                <button class="control-btn edit-btn">✏️</button>
+                                <button class="control-btn delete-btn">🗑️</button>
+                            </div>
+                            <div class="element-title">✍️ ${data.title}</div>
+                            <div class="element-body">
+                                <p class="freetext-question">${data.question}</p>
+                                <textarea class="freetext-input" id="freetext-${data.id}" placeholder="Scrivi la tua risposta qui..."></textarea>
+                                <button class="check-answer-btn" onclick="checkFreeTextAnswer('${data.id}')">Controlla Risposta</button>
+                                <div class="answer-feedback" id="feedback-${data.id}">
+                                    <p style="font-weight: 500; margin-bottom: 0.5rem;">💡 Suggerimento:</p>
+                                    <p style="font-size: 0.875rem; margin-bottom: 0.5rem;">${data.feedback}</p>
+                                    <p style="font-size: 0.875rem; color: #6b7280;"><strong>Esempio:</strong> ${data.sampleAnswer}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                
+                case 'dragdrop':
+                    return `
+                        <div class="element-content dragdrop-element" data-element-id="${data.id}">
+                            <div class="element-controls">
+                                <button class="control-btn edit-btn">✏️</button>
+                                <button class="control-btn delete-btn">🗑️</button>
+                            </div>
+                            <div class="element-title">🎯 ${data.title}</div>
+                            <div class="element-body">
+                                <p style="margin-bottom: 1rem; color: #374151;">${data.instruction}</p>
+                                <div class="dragdrop-container">
+                                    <div class="drag-items">
+                                        <h4>Parole Inglesi:</h4>
+                                        ${data.pairs.map((pair, index) => `
+                                            <div class="draggable-item" draggable="true" data-english="${pair.english}" data-index="${index}">
+                                                ${pair.english}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    <div class="drop-zones">
+                                        <h4>Traduzioni Italiane:</h4>
+                                        ${data.pairs.map((pair, index) => `
+                                            <div class="drop-zone-item" data-italian="${pair.italian}" data-index="${index}">
+                                                ${pair.italian}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                <button class="dragdrop-check-btn" onclick="checkDragDropAnswers('${data.id}')">Controlla Risposte</button>
+                                <div class="answer-feedback" id="dragdrop-feedback-${data.id}"></div>
+                            </div>
+                        </div>
+                    `;
+                
+                case 'fillblank':
+                    return `
+                        <div class="element-content fillblank-element" data-element-id="${data.id}">
+                            <div class="element-controls">
+                                <button class="control-btn edit-btn">✏️</button>
+                                <button class="control-btn delete-btn">🗑️</button>
+                            </div>
+                            <div class="element-title">📝 ${data.title}</div>
+                            <div class="element-body">
+                                <p style="margin-bottom: 1rem; color: #374151;">${data.instruction}</p>
+                                <div class="fillblank-words">
+                                    <h4>Parole disponibili:</h4>
+                                    <div class="word-bank">
+                                        ${data.wordBank.map(word => `<span class="bank-word">${word}</span>`).join('')}
+                                    </div>
+                                </div>
+                                <div class="fillblank-text">
+                                    ${generateFillBlankText(data.text, data.answers, data.id)}
+                                </div>
+                                <button class="fillblank-check-btn" onclick="checkFillBlankAnswers('${data.id}')">Controlla Risposte</button>
+                                <div class="answer-feedback" id="fillblank-feedback-${data.id}"></div>
+                            </div>
+                        </div>
+                    `;
+                
+                case 'grammar':
+                    return `
+                        <div class="element-content grammar-element" data-element-id="${data.id}">
+                            <div class="element-controls">
+                                <button class="control-btn edit-btn">✏️</button>
+                                <button class="control-btn delete-btn">🗑️</button>
+                            </div>
+                            <div class="element-title">📚 ${data.title}</div>
+                            <div class="element-body">
+                                <div style="margin-bottom: 1rem;">
+                                    <h3 style="font-size: 1.25rem; font-weight: bold; color: #8b5cf6; margin-bottom: 0.5rem;">${data.rule}</h3>
+                                    <p style="color: #374151; margin-bottom: 1rem; line-height: 1.6;">${data.explanation}</p>
+                                </div>
+                                
+                                <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem;">
+                                    <h4 style="font-size: 0.875rem; font-weight: 600; color: #6b7280; margin-bottom: 0.5rem;">FORMAZIONE:</h4>
+                                    <p style="font-family: monospace; color: #374151; font-weight: 500;">${data.formation}</p>
+                                </div>
+                                
+                                <div style="margin-bottom: 1rem;">
+                                    <h4 style="font-size: 0.875rem; font-weight: 600; color: #6b7280; margin-bottom: 0.75rem;">ESEMPI:</h4>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                        ${data.examples.map(example => `
+                                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: #f9fafb; border-radius: 4px;">
+                                                <span style="color: #3b82f6; font-weight: 500;">${example.english}</span>
+                                                <button onclick="speakText('${example.english}')" style="background: none; border: none; color: #3b82f6; cursor: pointer; font-size: 1rem;">🔊</button>
+                                            </div>
+                                            <div style="color: #6b7280; font-size: 0.875rem; margin-left: 0.5rem; margin-bottom: 0.5rem;">${example.italian}</div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                
+                                ${data.notes ? `
+                                    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 0.75rem; border-radius: 4px;">
+                                        <h4 style="font-size: 0.875rem; font-weight: 600; color: #92400e; margin-bottom: 0.25rem;">💡 NOTA:</h4>
+                                        <p style="color: #92400e; font-size: 0.875rem; margin: 0;">${data.notes}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                
+                case 'text':
+                    return `
+                        <div class="element-content text-element" data-element-id="${data.id}">
+                            <div class="element-controls">
+                                <button class="control-btn edit-btn">✏️</button>
+                                <button class="control-btn delete-btn">🗑️</button>
+                            </div>
+                            <div class="element-title">📄 ${data.title}</div>
+                            <div class="element-body">
+                                <p style="line-height: 1.6;">${data.content}</p>
+                            </div>
+                        </div>
+                    `;
+                
+                default:
+                    return '<div>Elemento non riconosciuto</div>';
+            }
+        }
+
+        function generateFillBlankText(text, answers, elementId) {
+            let blankIndex = 0;
+            return text.replace(/_+/g, () => {
+                const inputId = `blank-${elementId}-${blankIndex}`;
+                const correctAnswer = answers[blankIndex] || '';
+                blankIndex++;
+                return `<input type="text" class="blank-input" id="${inputId}" data-correct="${correctAnswer}">`;
+            });
+        }
+
+        // Element Events Setup
+        function setupElementEvents(elementDiv, elementData) {
+            const editBtn = elementDiv.querySelector('.edit-btn');
+            if (editBtn) {
+                editBtn.addEventListener('click', () => editElement(elementData));
+            }
+            
+            const deleteBtn = elementDiv.querySelector('.delete-btn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', () => deleteElement(elementData.id, elementDiv));
+            }
+            
+            if (elementData.type === 'quiz') {
+                setupQuizEvents(elementDiv, elementData);
+            } else if (elementData.type === 'dragdrop') {
+                setupDragDropEvents(elementDiv, elementData);
+            }
+        }
+
+        function setupQuizEvents(elementDiv, data) {
+            const options = elementDiv.querySelectorAll('.quiz-option');
+            const result = elementDiv.querySelector('.quiz-result');
+            
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    const selectedIndex = parseInt(this.dataset.index);
+                    const isCorrect = selectedIndex === data.correct;
+                    
+                    options.forEach(opt => {
+                        opt.style.background = 'white';
+                        opt.style.borderColor = '#d1d5db';
+                    });
+                    
+                    if (isCorrect) {
+                        this.style.background = '#dcfce7';
+                        this.style.borderColor = '#16a34a';
+                        result.style.background = '#dcfce7';
+                        result.style.border = '1px solid #16a34a';
+                        result.style.color = '#166534';
+                        result.querySelector('.result-text').textContent = '✅ Corretto!';
+                    } else {
+                        this.style.background = '#fee2e2';
+                        this.style.borderColor = '#dc2626';
+                        options[data.correct].style.background = '#dcfce7';
+                        options[data.correct].style.borderColor = '#16a34a';
+                        result.style.background = '#fee2e2';
+                        result.style.border = '1px solid #dc2626';
+                        result.style.color = '#991b1b';
+                        result.querySelector('.result-text').textContent = '❌ Sbagliato! La risposta corretta è: ' + data.options[data.correct];
+                    }
+                    
+                    result.classList.add('show');
+                });
+            });
+        }
+
+        function setupDragDropEvents(elementDiv, data) {
+            const draggableItems = elementDiv.querySelectorAll('.draggable-item');
+            const dropZones = elementDiv.querySelectorAll('.drop-zone-item');
+            
+            draggableItems.forEach(item => {
+                item.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', this.dataset.english);
+                    e.dataTransfer.setData('index', this.dataset.index);
+                    this.classList.add('dragging');
+                });
+                
+                item.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                });
+            });
+            
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('drag-over');
+                });
+                
+                zone.addEventListener('dragleave', function() {
+                    this.classList.remove('drag-over');
+                });
+                
+                zone.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('drag-over');
+                    
+                    const draggedText = e.dataTransfer.getData('text/plain');
+                    const draggedIndex = e.dataTransfer.getData('index');
+                    
+                    // Clear previous content
+                    this.innerHTML = `${this.dataset.italian} - <strong>${draggedText}</strong>`;
+                    this.classList.add('filled');
+                    this.dataset.droppedEnglish = draggedText;
+                    this.dataset.droppedIndex = draggedIndex;
+                });
+            });
+        }
+
+        // Exercise Functions
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                speechSynthesis.speak(utterance);
+            } else {
+                alert('Il tuo browser non supporta la sintesi vocale');
+            }
+        }
+
+        function checkFreeTextAnswer(elementId) {
+            const input = document.getElementById(`freetext-${elementId}`);
+            const feedback = document.getElementById(`feedback-${elementId}`);
+            
+            if (input.value.trim().length > 10) {
+                feedback.style.background = '#dcfce7';
+                feedback.style.border = '1px solid #16a34a';
+                feedback.style.color = '#166534';
+            } else {
+                feedback.style.background = '#fef3c7';
+                feedback.style.border = '1px solid #f59e0b';
+                feedback.style.color = '#92400e';
+            }
+            
+            feedback.classList.add('show');
+        }
+
+        function checkDragDropAnswers(elementId) {
+            const element = lessonElements.find(el => el.id === elementId);
+            const dropZones = document.querySelectorAll(`[data-element-id="${elementId}"] .drop-zone-item`);
+            const feedback = document.getElementById(`dragdrop-feedback-${elementId}`);
+            
+            let correct = 0;
+            let total = element.pairs.length;
+            
+            dropZones.forEach(zone => {
+                const correctEnglish = element.pairs.find(pair => pair.italian === zone.dataset.italian)?.english;
+                const droppedEnglish = zone.dataset.droppedEnglish;
+                
+                if (correctEnglish === droppedEnglish) {
+                    correct++;
+                    zone.style.background = '#dcfce7';
+                    zone.style.borderColor = '#16a34a';
+                } else if (droppedEnglish) {
+                    zone.style.background = '#fee2e2';
+                    zone.style.borderColor = '#dc2626';
+                }
+            });
+            
+            feedback.innerHTML = `
+                <p style="font-weight: 500; margin-bottom: 0.5rem;">
+                    ${correct === total ? '🎉 Perfetto!' : `📊 Risultato: ${correct}/${total} corrette`}
+                </p>
+                <p style="font-size: 0.875rem;">
+                    ${correct === total ? 'Hai abbinato tutte le parole correttamente!' : 'Riprova con le parole sbagliate.'}
+                </p>
+            `;
+            
+            feedback.style.background = correct === total ? '#dcfce7' : '#fef3c7';
+            feedback.style.border = `1px solid ${correct === total ? '#16a34a' : '#f59e0b'}`;
+            feedback.style.color = correct === total ? '#166534' : '#92400e';
+            feedback.classList.add('show');
+        }
+
+        function checkFillBlankAnswers(elementId) {
+            const element = lessonElements.find(el => el.id === elementId);
+            const inputs = document.querySelectorAll(`[data-element-id="${elementId}"] .blank-input`);
+            const feedback = document.getElementById(`fillblank-feedback-${elementId}`);
+            
+            let correct = 0;
+            let total = inputs.length;
+            
+            inputs.forEach(input => {
+                const userAnswer = input.value.trim().toLowerCase();
+                const correctAnswer = input.dataset.correct.toLowerCase();
+                
+                if (userAnswer === correctAnswer) {
+                    correct++;
+                    input.classList.add('correct');
+                    input.classList.remove('incorrect');
+                } else {
+                    input.classList.add('incorrect');
+                    input.classList.remove('correct');
+                }
+            });
+            
+            feedback.innerHTML = `
+                <p style="font-weight: 500; margin-bottom: 0.5rem;">
+                    ${correct === total ? '🎉 Perfetto!' : `📊 Risultato: ${correct}/${total} corrette`}
+                </p>
+                <p style="font-size: 0.875rem;">
+                    ${correct === total ? 'Hai completato tutte le frasi correttamente!' : 'Controlla le parole evidenziate in rosso.'}
+                </p>
+            `;
+            
+            feedback.style.background = correct === total ? '#dcfce7' : '#fef3c7';
+            feedback.style.border = `1px solid ${correct === total ? '#16a34a' : '#f59e0b'}`;
+            feedback.style.color = correct === total ? '#166534' : '#92400e';
+            feedback.classList.add('show');
+        }
+
+        // Element Editing
+        function editElement(elementData) {
+            currentEditingElement = elementData;
+            showEditModal(elementData);
+        }
+
+        function showEditModal(data) {
+            document.getElementById('modalTitle').textContent = `Modifica ${getElementTypeName(data.type)}`;
+            document.getElementById('modalContent').innerHTML = generateEditForm(data);
+            document.getElementById('elementModal').classList.add('show');
+        }
+
+        function getElementTypeName(type) {
+            const names = {
+                header: 'Header',
+                lesson: 'Lezione',
+                vocabulary: 'Vocabolario',
+                quiz: 'Quiz',
+                freetext: 'Risposta Libera',
+                dragdrop: 'Drag & Drop',
+                fillblank: 'Riempimento Testi',
+                grammar: 'Grammatica',
+                text: 'Testo'
+            };
+            return names[type] || type;
+        }
+
+        function generateEditForm(data) {
+            switch(data.type) {
+                case 'header':
+                    return `
+                        <div class="form-group">
+                            <label class="form-label">Titolo</label>
+                            <input type="text" id="edit-title" value="${data.title}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Sottotitolo</label>
+                            <input type="text" id="edit-subtitle" value="${data.subtitle}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Livello</label>
+                            <select id="edit-level" class="form-input">
+                                <option value="Principiante" ${data.level === 'Principiante' ? 'selected' : ''}>Principiante</option>
+                                <option value="Intermedio" ${data.level === 'Intermedio' ? 'selected' : ''}>Intermedio</option>
+                                <option value="Avanzato" ${data.level === 'Avanzato' ? 'selected' : ''}>Avanzato</option>
+                            </select>
+                        </div>
+                    `;
+                
+                case 'freetext':
+                    return `
+                        <div class="form-group">
+                            <label class="form-label">Titolo</label>
+                            <input type="text" id="edit-title" value="${data.title}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Domanda</label>
+                            <textarea id="edit-question" class="form-textarea" rows="3">${data.question}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Risposta di Esempio</label>
+                            <textarea id="edit-sample-answer" class="form-textarea" rows="3">${data.sampleAnswer}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Feedback</label>
+                            <textarea id="edit-feedback" class="form-textarea" rows="2">${data.feedback}</textarea>
+                        </div>
+                    `;
+                
+                case 'dragdrop':
+                    return `
+                        <div class="form-group">
+                            <label class="form-label">Titolo</label>
+                            <input type="text" id="edit-title" value="${data.title}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Istruzioni</label>
+                            <input type="text" id="edit-instruction" value="${data.instruction}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Coppie di Parole</label>
+                            <div id="pairs-list">
+                                ${data.pairs.map((pair, index) => `
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <input type="text" placeholder="Parola inglese" value="${pair.english}" class="pair-english form-input">
+                                        <input type="text" placeholder="Traduzione italiana" value="${pair.italian}" class="pair-italian form-input">
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button type="button" onclick="addPairRow()" class="btn btn-primary" style="margin-top: 0.5rem;">+ Aggiungi Coppia</button>
+                        </div>
+                    `;
+                
+                case 'fillblank':
+                    return `
+                        <div class="form-group">
+                            <label class="form-label">Titolo</label>
+                            <input type="text" id="edit-title" value="${data.title}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Istruzioni</label>
+                            <input type="text" id="edit-instruction" value="${data.instruction}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Testo (usa ___ per gli spazi vuoti)</label>
+                            <textarea id="edit-text" class="form-textarea" rows="3">${data.text}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Risposte Corrette (separate da virgola)</label>
+                            <input type="text" id="edit-answers" value="${data.answers.join(', ')}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Banca Parole (separate da virgola)</label>
+                            <input type="text" id="edit-word-bank" value="${data.wordBank.join(', ')}" class="form-input">
+                        </div>
+                    `;
+                
+                case 'lesson':
+                    return `
+                        <div class="form-group">
+                            <label class="form-label">Titolo</label>
+                            <input type="text" id="edit-title" value="${data.title}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Argomento</label>
+                            <input type="text" id="edit-topic" value="${data.topic}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Obiettivo</label>
+                            <textarea id="edit-objective" class="form-textarea" rows="2">${data.objective}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contenuto</label>
+                            <textarea id="edit-content" class="form-textarea" rows="3">${data.content}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Dialogo</label>
+                            <div id="dialogue-list">
+                                ${data.dialogue.map((line, index) => `
+                                    <div style="display: grid; grid-template-columns: 60px 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem; align-items: start;">
+                                        <select class="dialogue-speaker form-input">
+                                            <option value="A" ${line.speaker === 'A' ? 'selected' : ''}>A</option>
+                                            <option value="B" ${line.speaker === 'B' ? 'selected' : ''}>B</option>
+                                        </select>
+                                        <textarea placeholder="Testo in lingua straniera" class="dialogue-text form-textarea" rows="2">${line.text}</textarea>
+                                        <textarea placeholder="Traduzione" class="dialogue-translation form-textarea" rows="2">${line.translation}</textarea>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button type="button" onclick="addDialogueLine()" class="btn btn-primary" style="margin-top: 0.5rem;">+ Aggiungi Battuta</button>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Frasi Chiave</label>
+                            <div id="phrases-list">
+                                ${data.keyPhrases.map((phrase, index) => `
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <input type="text" placeholder="Frase" value="${phrase.phrase}" class="phrase-text form-input">
+                                        <input type="text" placeholder="Traduzione" value="${phrase.translation}" class="phrase-translation form-input">
+                                        <input type="text" placeholder="Uso" value="${phrase.usage}" class="phrase-usage form-input">
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button type="button" onclick="addPhraseRow()" class="btn btn-primary" style="margin-top: 0.5rem;">+ Aggiungi Frase</button>
+                        </div>
+                    `;
+                
+                case 'vocabulary':
+                    return `
+                        <div class="form-group">
+                            <label class="form-label">Titolo</label>
+                            <input type="text" id="edit-title" value="${data.title}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Parole</label>
+                            <div id="words-list">
+                                ${data.words.map((word, index) => `
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <input type="text" placeholder="Parola straniera" value="${word.foreign}" class="word-foreign form-input">
+                                        <input type="text" placeholder="Traduzione" value="${word.italian}" class="word-italian form-input">
+                                        <input type="text" placeholder="Esempio" value="${word.example}" class="word-example form-input">
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button type="button" onclick="addWordRow()" class="btn btn-primary" style="margin-top: 0.5rem;">+ Aggiungi Parola</button>
+                        </div>
+                    `;
+                
+                case 'quiz':
+                    return `
+                        <div class="form-group">
+                            <label class="form-label">Titolo</label>
+                            <input type="text" id="edit-title" value="${data.title}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Domanda</label>
+                            <textarea id="edit-question" class="form-textarea" rows="2">${data.question}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Opzioni de Risposta</label>
+                            ${data.options.map((option, index) => `
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="radio" name="correct-answer" value="${index}" ${index === data.correct ? 'checked' : ''}>
+                                    <input type="text" class="quiz-option-input form-input" value="${option}" style="flex: 1;">
+                                    <span style="font-size: 0.875rem; color: #6b7280;">${index === data.correct ? '(Corretta)' : ''}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Spiegazione</label>
+                            <textarea id="edit-explanation" class="form-textarea" rows="2">${data.explanation}</textarea>
+                        </div>
+                    `;
+                
+                case 'grammar':
+                    return `
+                        <div class="form-group">
+                            <label class="form-label">Titolo</label>
+                            <input type="text" id="edit-title" value="${data.title}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Regola Grammaticale</label>
+                            <input type="text" id="edit-rule" value="${data.rule}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Spiegazione</label>
+                            <textarea id="edit-explanation" class="form-textarea" rows="3">${data.explanation}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Formazione</label>
+                            <input type="text" id="edit-formation" value="${data.formation}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Esempi</label>
+                            <div id="examples-list">
+                                ${data.examples.map((example, index) => `
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                        <input type="text" placeholder="Frase inglese" value="${example.english}" class="example-english form-input">
+                                        <input type="text" placeholder="Traduzione italiana" value="${example.italian}" class="example-italian form-input">
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button type="button" onclick="addExampleRow()" class="btn btn-primary" style="margin-top: 0.5rem;">+ Aggiungi Esempio</button>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Note (opzionale)</label>
+                            <textarea id="edit-notes" class="form-textarea" rows="2">${data.notes || ''}</textarea>
+                        </div>
+                    `;
+                
+                case 'text':
+                    return `
+                        <div class="form-group">
+                            <label class="form-label">Titolo</label>
+                            <input type="text" id="edit-title" value="${data.title}" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contenuto</label>
+                            <textarea id="edit-content" class="form-textarea" rows="6">${data.content}</textarea>
+                        </div>
+                    `;
+                
+                default:
+                    return '<p>Editor non disponibile per questo tipo di elemento.</p>';
+            }
+        }
+
+        function saveElementEdit() {
+            if (!currentEditingElement) return;
+            
+            const data = currentEditingElement;
+            
+            switch(data.type) {
+                case 'header':
+                    data.title = document.getElementById('edit-title').value;
+                    data.subtitle = document.getElementById('edit-subtitle').value;
+                    data.level = document.getElementById('edit-level').value;
+                    break;
+                
+                case 'freetext':
+                    data.title = document.getElementById('edit-title').value;
+                    data.question = document.getElementById('edit-question').value;
+                    data.sampleAnswer = document.getElementById('edit-sample-answer').value;
+                    data.feedback = document.getElementById('edit-feedback').value;
+                    break;
+                
+                case 'dragdrop':
+                    data.title = document.getElementById('edit-title').value;
+                    data.instruction = document.getElementById('edit-instruction').value;
+                    data.pairs = [];
+                    document.querySelectorAll('#pairs-list > div').forEach(row => {
+                        const english = row.querySelector('.pair-english').value;
+                        const italian = row.querySelector('.pair-italian').value;
+                        if (english && italian) {
+                            data.pairs.push({ english, italian });
+                        }
+                    });
+                    break;
+                
+                case 'fillblank':
+                    data.title = document.getElementById('edit-title').value;
+                    data.instruction = document.getElementById('edit-instruction').value;
+                    data.text = document.getElementById('edit-text').value;
+                    data.answers = document.getElementById('edit-answers').value.split(',').map(s => s.trim());
+                    data.wordBank = document.getElementById('edit-word-bank').value.split(',').map(s => s.trim());
+                    break;
+                
+                case 'lesson':
+                    data.title = document.getElementById('edit-title').value;
+                    data.topic = document.getElementById('edit-topic').value;
+                    data.objective = document.getElementById('edit-objective').value;
+                    data.content = document.getElementById('edit-content').value;
+                    
+                    // Dialogue
+                    data.dialogue = [];
+                    document.querySelectorAll('#dialogue-list > div').forEach(row => {
+                        const speaker = row.querySelector('.dialogue-speaker').value;
+                        const text = row.querySelector('.dialogue-text').value;
+                        const translation = row.querySelector('.dialogue-translation').value;
+                        if (text && translation) {
+                            data.dialogue.push({ speaker, text, translation });
+                        }
+                    });
+                    
+                    // Key phrases
+                    data.keyPhrases = [];
+                    document.querySelectorAll('#phrases-list > div').forEach(row => {
+                        const phrase = row.querySelector('.phrase-text').value;
+                        const translation = row.querySelector('.phrase-translation').value;
+                        const usage = row.querySelector('.phrase-usage').value;
+                        if (phrase && translation) {
+                            data.keyPhrases.push({ phrase, translation, usage });
+                        }
+                    });
+                    break;
+                
+                case 'vocabulary':
+                    data.title = document.getElementById('edit-title').value;
+                    data.words = [];
+                    document.querySelectorAll('#words-list > div').forEach(row => {
+                        const foreign = row.querySelector('.word-foreign').value;
+                        const italian = row.querySelector('.word-italian').value;
+                        const example = row.querySelector('.word-example').value;
+                        if (foreign && italian) {
+                            data.words.push({ foreign, italian, example });
+                        }
+                    });
+                    break;
+                
+                case 'quiz':
+                    data.title = document.getElementById('edit-title').value;
+                    data.question = document.getElementById('edit-question').value;
+                    data.explanation = document.getElementById('edit-explanation').value;
+                    data.options = [];
+                    document.querySelectorAll('.quiz-option-input').forEach(input => {
+                        data.options.push(input.value);
+                    });
+                    const correctRadio = document.querySelector('input[name="correct-answer"]:checked');
+                    if (correctRadio) {
+                        data.correct = parseInt(correctRadio.value);
+                    }
+                    break;
+                
+                case 'grammar':
+                    data.title = document.getElementById('edit-title').value;
+                    data.rule = document.getElementById('edit-rule').value;
+                    data.explanation = document.getElementById('edit-explanation').value;
+                    data.formation = document.getElementById('edit-formation').value;
+                    data.notes = document.getElementById('edit-notes').value;
+                    data.examples = [];
+                    document.querySelectorAll('#examples-list > div').forEach(row => {
+                        const english = row.querySelector('.example-english').value;
+                        const italian = row.querySelector('.example-italian').value;
+                        if (english && italian) {
+                            data.examples.push({ english, italian });
+                        }
+                    });
+                    break;
+                
+                case 'text':
+                    data.title = document.getElementById('edit-title').value;
+                    data.content = document.getElementById('edit-content').value;
+                    break;
+            }
+            
+            regenerateElement(data);
+            closeModal();
+        }
+
+        function regenerateElement(data) {
+            const elementDiv = document.querySelector(`[data-element-id="${data.id}"]`).parentElement;
+            elementDiv.innerHTML = generateElementHTML(data);
+            setupElementEvents(elementDiv, data);
+        }
+
+        // Element Management
+        function deleteElement(elementId, elementDiv) {
+            if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
+                lessonElements = lessonElements.filter(el => el.id !== elementId);
+                elementDiv.remove();
+                
+                if (lessonElements.length === 0) {
+                    showEmptyState();
+                }
+            }
+        }
+
+        function clearAllElements() {
+            if (confirm('Sei sicuro di voler eliminare tutti gli elementi?')) {
+                lessonElements = [];
+                document.getElementById('buildArea').innerHTML = '';
+                showEmptyState();
+            }
+        }
+
+        function hideEmptyState() {
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) {
+                emptyState.remove();
+            }
+        }
+
+        function showEmptyState() {
+            const buildArea = document.getElementById('buildArea');
+            buildArea.innerHTML = `
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">🎯</div>
+                    <h3 class="empty-title">Inizia a Costruire</h3>
+                    <p class="empty-text">Trascina gli elementi dalla barra laterale per creare la tua lezione</p>
+                </div>
+            `;
+        }
+
+        // Modal Functions
+        function closeModal() {
+            document.getElementById('elementModal').classList.remove('show');
+            currentEditingElement = null;
+        }
+
+        function closePreview() {
+            document.getElementById('previewModal').classList.remove('show');
+        }
+
+        function closeExport() {
+            document.getElementById('exportModal').classList.remove('show');
+        }
+
+        // Preview and Export
+        function showPreview() {
+            const lessonTitle = document.getElementById('lessonTitle').value;
+            
+            let previewHTML = `
+                <div style="max-width: 800px; margin: 0 auto;">
+                    <header style="text-align: center; margin-bottom: 2rem;">
+                        <h1 style="font-size: 2rem; font-weight: bold; color: #1f2937; margin-bottom: 0.5rem;">${lessonTitle}</h1>
+                        <p style="color: #6b7280;">Anteprima della lezione completa</p>
+                    </header>
+                    <div>
+            `;
+            
+            lessonElements.forEach(elementData => {
+                previewHTML += generateCleanElementHTML(elementData);
+            });
+            
+            previewHTML += `
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('previewContent').innerHTML = previewHTML;
+            document.getElementById('previewModal').classList.add('show');
+        }
+
+        function showExportModal() {
+            const lessonTitle = document.getElementById('lessonTitle').value;
+            
+            if (lessonElements.length === 0) {
+                alert('Aggiungi almeno un elemento alla lezione prima di esportare!');
+                return;
+            }
+            
+            const cleanCode = generateLessonCode(lessonTitle);
+            document.getElementById('exportCodeDisplay').textContent = cleanCode;
+            document.getElementById('exportModal').classList.add('show');
+        }
+
+        function selectAllCode() {
+            const pre = document.getElementById('exportCodeDisplay');
+            const range = document.createRange();
+            range.selectNode(pre);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+        }
+
+        function generateLessonCode(lessonTitle) {
+            let cleanContent = '';
+            lessonElements.forEach(elementData => {
+                cleanContent += generateCleanElementHTML(elementData);
+            });
+            
+            const fullHTML = `<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${lessonTitle}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 2rem 1rem;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .quiz-option:hover, .check-answer-btn:hover, .dragdrop-check-btn:hover, .fillblank-check-btn:hover {
+            background-color: #f3f4f6 !important;
+        }
+        .blank-input { border: none; border-bottom: 2px solid #ef4444; background: transparent; padding: 0.25rem 0.5rem; margin: 0 0.25rem; font-size: 1.125rem; font-weight: 500; color: #ef4444; min-width: 80px; text-align: center; }
+        .blank-input:focus { outline: none; border-bottom-color: #dc2626; }
+        .blank-input.correct { border-bottom-color: #22c55e; color: #22c55e; }
+        .blank-input.incorrect { border-bottom-color: #ef4444; color: #ef4444; background: #fee2e2; }
+        .draggable-item { background: #a855f7; color: white; padding: 0.5rem 0.75rem; border-radius: 6px; margin-bottom: 0.5rem; cursor: move; user-select: none; }
+        .drop-zone-item { border: 2px dashed #d1d5db; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.5rem; min-height: 50px; display: flex; align-items: center; }
+        .drop-zone-item.drag-over { border-color: #a855f7; background: #faf5ff; }
+        .drop-zone-item.filled { background: #f0fdf4; border-color: #22c55e; }
+        @media (max-width: 768px) {
+            body { padding: 1rem 0.5rem; }
+            .container { padding: 0 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="font-size: 2rem; font-weight: bold; color: #1f2937; margin-bottom: 0.5rem;">${lessonTitle}</h1>
+            <p style="color: #6b7280;">Lezione interattiva</p>
+        </header>
+        
+        ${cleanContent}
+    </div>
+    
+    <script>
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                speechSynthesis.speak(utterance);
+            } else {
+                alert('Il tuo browser non supporta la sintesi vocale');
+            }
+        }
+
+        function checkFreeTextAnswer(elementId) {
+            const input = document.getElementById('freetext-' + elementId);
+            const feedback = document.getElementById('feedback-' + elementId);
+            
+            if (input.value.trim().length > 10) {
+                feedback.style.background = '#dcfce7';
+                feedback.style.border = '1px solid #16a34a';
+                feedback.style.color = '#166534';
+            } else {
+                feedback.style.background = '#fef3c7';
+                feedback.style.border = '1px solid #f59e0b';
+                feedback.style.color = '#92400e';
+            }
+            
+            feedback.style.display = 'block';
+        }
+
+        function checkDragDropAnswers(elementId) {
+            const dropZones = document.querySelectorAll('[data-element-id="' + elementId + '"] .drop-zone-item');
+            const feedback = document.getElementById('dragdrop-feedback-' + elementId);
+            
+            let correct = 0;
+            let total = dropZones.length;
+            
+            dropZones.forEach(zone => {
+                if (zone.dataset.droppedEnglish && zone.dataset.droppedIndex !== undefined) {
+                    correct++;
+                    zone.style.background = '#dcfce7';
+                    zone.style.borderColor = '#16a34a';
+                }
+            });
+            
+            feedback.innerHTML = '<p style="font-weight: 500;">' + (correct === total ? '🎉 Perfetto!' : '📊 Risultato: ' + correct + '/' + total + ' corrette') + '</p>';
+            feedback.style.background = correct === total ? '#dcfce7' : '#fef3c7';
+            feedback.style.border = '1px solid ' + (correct === total ? '#16a34a' : '#f59e0b');
+            feedback.style.color = correct === total ? '#166534' : '#92400e';
+            feedback.style.display = 'block';
+            feedback.style.marginTop = '1rem';
+            feedback.style.padding = '0.75rem';
+            feedback.style.borderRadius = '6px';
+        }
+
+        function checkFillBlankAnswers(elementId) {
+            const inputs = document.querySelectorAll('[data-element-id="' + elementId + '"] .blank-input');
+            const feedback = document.getElementById('fillblank-feedback-' + elementId);
+            
+            let correct = 0;
+            let total = inputs.length;
+            
+            inputs.forEach(input => {
+                const userAnswer = input.value.trim().toLowerCase();
+                const correctAnswer = input.dataset.correct.toLowerCase();
+                
+                if (userAnswer === correctAnswer) {
+                    correct++;
+                    input.classList.add('correct');
+                    input.classList.remove('incorrect');
+                } else {
+                    input.classList.add('incorrect');
+                    input.classList.remove('correct');
+                }
+            });
+            
+            feedback.innerHTML = '<p style="font-weight: 500;">' + (correct === total ? '🎉 Perfetto!' : '📊 Risultato: ' + correct + '/' + total + ' corrette') + '</p>';
+            feedback.style.background = correct === total ? '#dcfce7' : '#fef3c7';
+            feedback.style.border = '1px solid ' + (correct === total ? '#16a34a' : '#f59e0b');
+            feedback.style.color = correct === total ? '#166534' : '#92400e';
+            feedback.style.display = 'block';
+            feedback.style.marginTop = '1rem';
+            feedback.style.padding = '0.75rem';
+            feedback.style.borderRadius = '6px';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Quiz functionality
+            document.querySelectorAll('.quiz-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const quizContainer = this.closest('div[style*="background: #d1fae5"]');
+                    const allOptions = quizContainer.querySelectorAll('.quiz-option');
+                    const result = quizContainer.querySelector('.quiz-result');
+                    const selectedIndex = parseInt(this.dataset.index);
+                    const correctIndex = parseInt(this.dataset.correct);
+                    const isCorrect = selectedIndex === correctIndex;
+                    
+                    allOptions.forEach(opt => {
+                        opt.style.background = 'white';
+                        opt.style.borderColor = '#d1d5db';
+                    });
+                    
+                    if (isCorrect) {
+                        this.style.background = '#dcfce7';
+                        this.style.borderColor = '#16a34a';
+                        result.style.background = '#dcfce7';
+                        result.style.border = '1px solid #16a34a';
+                        result.style.color = '#166534';
+                        result.querySelector('p').textContent = '✅ Corretto!';
+                    } else {
+                        this.style.background = '#fee2e2';
+                        this.style.borderColor = '#dc2626';
+                        allOptions[correctIndex].style.background = '#dcfce7';
+                        allOptions[correctIndex].style.borderColor = '#16a34a';
+                        result.style.background = '#fee2e2';
+                        result.style.border = '1px solid #dc2626';
+                        result.style.color = '#991b1b';
+                        result.querySelector('p').textContent = '❌ Sbagliato! La risposta corretta è: ' + allOptions[correctIndex].textContent.substring(3);
+                    }
+                    
+                    result.style.display = 'block';
+                });
+            });
+
+            // Drag and drop functionality
+            document.querySelectorAll('.draggable-item').forEach(item => {
+                item.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/plain', this.dataset.english || this.textContent);
+                    e.dataTransfer.setData('index', this.dataset.index);
+                });
+            });
+            
+            document.querySelectorAll('.drop-zone-item').forEach(zone => {
+                zone.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.classList.add('drag-over');
+                });
+                
+                zone.addEventListener('dragleave', function() {
+                    this.classList.remove('drag-over');
+                });
+                
+                zone.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.classList.remove('drag-over');
+                    
+                    const draggedText = e.dataTransfer.getData('text/plain');
+                    const draggedIndex = e.dataTransfer.getData('index');
+                    
+                    this.innerHTML = this.dataset.italian + ' - <strong>' + draggedText + '</strong>';
+                    this.classList.add('filled');
+                    this.dataset.droppedEnglish = draggedText;
+                    this.dataset.droppedIndex = draggedIndex;
+                });
+            });
+        });
+    <\/script>
+</body>
+</html>`;
+            
+            return fullHTML;
+        }
+
+        function generateCleanElementHTML(data) {
+            switch(data.type) {
+                case 'header':
+                    return `
+                        <div style="background: #f8fafc; border-left: 4px solid #64748b; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                            <div style="background: white; padding: 1rem; border-radius: 6px;">
+                                <h1 style="font-size: 2rem; font-weight: bold; color: #1f2937; margin-bottom: 0.5rem; text-align: center;">${data.title}</h1>
+                                <p style="font-size: 1.125rem; color: #6b7280; text-align: center; margin-bottom: 0.5rem;">${data.subtitle}</p>
+                                <div style="text-align: center;">
+                                    <span style="background: #e5e7eb; color: #374151; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem;">
+                                        📚 Livello: ${data.level}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                
+                case 'lesson':
+                    return `
+                        <div style="background: #f0f9ff; border-left: 4px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                            <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">🎓 ${data.title}</h3>
+                            <div style="background: white; padding: 1rem; border-radius: 6px;">
+                                <div style="background: #e0f2fe; border: 1px solid #0ea5e9; border-radius: 6px; padding: 0.75rem; margin-bottom: 1rem;">
+                                    <h4 style="font-size: 0.875rem; font-weight: 600; color: #0c4a6e; margin-bottom: 0.5rem;">🎯 OBIETTIVO:</h4>
+                                    <p style="color: #0c4a6e; margin-bottom: 0.5rem;">${data.objective}</p>
+                                    <p style="color: #374151; font-size: 0.875rem;">${data.content}</p>
+                                </div>
+                                
+                                <div style="background: #f8fafc; border-radius: 6px; padding: 1rem; margin-bottom: 1rem;">
+                                    <h4 style="font-size: 1rem; font-weight: 600; color: #374151; margin-bottom: 0.75rem;">💬 Dialogo: ${data.topic}</h4>
+                                    ${data.dialogue.map(line => `
+                                        <div style="display: flex; flex-direction: column; margin-bottom: 1rem; padding: 0.75rem; border-radius: 6px; ${line.speaker === 'A' ? 'background: #dbeafe; align-items: flex-start;' : 'background: #dcfce7; align-items: flex-end;'}">
+                                            <div style="font-weight: 500; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                                                <strong>${line.speaker}:</strong> ${line.text}
+                                                <button onclick="speakText('${line.text}')" style="background: none; border: none; color: #3b82f6; cursor: pointer;">🔊</button>
+                                            </div>
+                                            <div style="font-size: 0.875rem; color: #6b7280; font-style: italic;">${line.translation}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                
+                                <div style="background: #fef3c7; border-radius: 6px; padding: 1rem;">
+                                    <h4 style="font-size: 1rem; font-weight: 600; color: #92400e; margin-bottom: 0.75rem;">🔑 Frasi Chiave</h4>
+                                    ${data.keyPhrases.map(phrase => `
+                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: white; border-radius: 4px; margin-bottom: 0.5rem;">
+                                            <div>
+                                                <div style="font-weight: 500; color: #0ea5e9;">${phrase.phrase}</div>
+                                                <div style="color: #6b7280; font-size: 0.875rem;">${phrase.translation}</div>
+                                            </div>
+                                            <div style="font-size: 0.75rem; color: #92400e; background: #fef3c7; padding: 0.25rem 0.5rem; border-radius: 12px;">${phrase.usage}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                
+                case 'vocabulary':
+                    return `
+                        <div style="background: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                            <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">📝 ${data.title}</h3>
+                            <div style="background: white; padding: 1rem; border-radius: 6px;">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0.75rem;">
+                                    ${data.words.map(word => `
+                                        <div style="background: white; padding: 0.75rem; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                                                <span style="font-size: 1.125rem; font-weight: 600; color: #3b82f6;">${word.foreign}</span>
+                                                <button onclick="speakText('${word.foreign}')" style="background: none; border: none; color: #3b82f6; cursor: pointer; font-size: 1rem;">🔊</button>
+                                            </div>
+                                            <div style="color: #374151; margin-bottom: 0.25rem;">${word.italian}</div>
+                                            <div style="font-size: 0.875rem; color: #6b7280; font-style: italic;">"${word.example}"</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                
+                case 'quiz':
+                    return `
+                        <div style="background: #d1fae5; border-left: 4px solid #10b981; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                            <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">🎯 ${data.title}</h3>
+                            <div style="background: white; padding: 1rem; border-radius: 6px;">
+                                <p style="font-size: 1.125rem; margin-bottom: 1rem;">${data.question}</p>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    ${data.options.map((option, index) => `
+                                        <button class="quiz-option" data-index="${index}" data-correct="${data.correct}" style="width: 100%; text-align: left; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; background: white; cursor: pointer; transition: all 0.2s;">
+                                            ${String.fromCharCode(65 + index)}. ${option}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                                <div class="quiz-result" style="margin-top: 1rem; padding: 0.75rem; border-radius: 6px; display: none;">
+                                    <p style="font-weight: 500; margin-bottom: 0.5rem;"></p>
+                                    <p style="font-size: 0.875rem;">${data.explanation}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                
+                case 'freetext':
+                    return `
+                        <div style="background: #f0fdf4; border-left: 4px solid #22c55e; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;" data-element-id="${data.id}">
+                            <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">✍️ ${data.title}</h3>
+                            <div style="background: white; padding: 1rem; border-radius: 6px;">
+                                <p style="font-size: 1.125rem; margin-bottom: 1rem; color: #374151;">${data.question}</p>
+                                <textarea id="freetext-${data.id}" placeholder="Scrivi la tua risposta qui..." style="width: 100%; min-height: 100px; padding: 0.75rem; border: 2px solid #d1d5db; border-radius: 6px; font-size: 1rem; resize: vertical; margin-bottom: 1rem;"></textarea>
+                                <button onclick="checkFreeTextAnswer('${data.id}')" style="background: #22c55e; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Controlla Risposta</button>
+                                <div id="feedback-${data.id}" style="margin-top: 1rem; padding: 0.75rem; border-radius: 6px; display: none;">
+                                    <p style="font-weight: 500; margin-bottom: 0.5rem;">💡 Suggerimento:</p>
+                                    <p style="font-size: 0.875rem; margin-bottom: 0.5rem;">${data.feedback}</p>
+                                    <p style="font-size: 0.875rem; color: #6b7280;"><strong>Esempio:</strong> ${data.sampleAnswer}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                
+                case 'dragdrop':
+                    return `
+                        <div style="background: #fdf4ff; border-left: 4px solid #a855f7; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;" data-element-id="${data.id}">
+                            <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">🎯 ${data.title}</h3>
+                            <div style="background: white; padding: 1rem; border-radius: 6px;">
+                                <p style="margin-bottom: 1rem; color: #374151;">${data.instruction}</p>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1rem;">
+                                    <div style="background: #f8fafc; padding: 1rem; border-radius: 6px; min-height: 200px;">
+                                        <h4 style="margin-bottom: 0.75rem; color: #374151; font-size: 0.875rem; font-weight: 600;">Parole Inglesi:</h4>
+                                        ${data.pairs.map((pair, index) => `
+                                            <div class="draggable-item" draggable="true" data-english="${pair.english}" data-index="${index}" style="background: #a855f7; color: white; padding: 0.5rem 0.75rem; border-radius: 6px; margin-bottom: 0.5rem; cursor: move; user-select: none;">
+                                                ${pair.english}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    <div style="background: #f8fafc; padding: 1rem; border-radius: 6px; min-height: 200px;">
+                                        <h4 style="margin-bottom: 0.75rem; color: #374151; font-size: 0.875rem; font-weight: 600;">Traduzioni Italiane:</h4>
+                                        ${data.pairs.map((pair, index) => `
+                                            <div class="drop-zone-item" data-italian="${pair.italian}" data-index="${index}" style="border: 2px dashed #d1d5db; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.5rem; min-height: 50px; display: flex; align-items: center;">
+                                                ${pair.italian}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                <button onclick="checkDragDropAnswers('${data.id}')" style="background: #a855f7; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; margin-top: 1rem;">Controlla Risposte</button>
+                                <div id="dragdrop-feedback-${data.id}" style="margin-top: 1rem; padding: 0.75rem; border-radius: 6px; display: none;"></div>
+                            </div>
+                        </div>
+                    `;
+                
+                case 'fillblank':
+                    return `
+                        <div style="background: #fecaca; border-left: 4px solid #ef4444; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;" data-element-id="${data.id}">
+                            <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">📝 ${data.title}</h3>
+                            <div style="background: white; padding: 1rem; border-radius: 6px;">
+                                <p style="margin-bottom: 1rem; color: #374151;">${data.instruction}</p>
+                                <div style="background: #fef2f2; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem;">
+                                    <h4 style="font-size: 0.875rem; color: #991b1b; margin-bottom: 0.5rem;">Parole disponibili:</h4>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                        ${data.wordBank.map(word => `<span style="background: white; color: #ef4444; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem; border: 1px solid #fca5a5;">${word}</span>`).join('')}
+                                    </div>
+                                </div>
+                                <div style="font-size: 1.125rem; line-height: 1.8; margin-bottom: 1rem;">
+                                    ${generateFillBlankText(data.text, data.answers, data.id)}
+                                </div>
+                                <button onclick="checkFillBlankAnswers('${data.id}')" style="background: #ef4444; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; margin-top: 1rem;">Controlla Risposte</button>
+                                <div id="fillblank-feedback-${data.id}" style="margin-top: 1rem; padding: 0.75rem; border-radius: 6px; display: none;"></div>
+                            </div>
+                        </div>
+                    `;
+                
+                case 'grammar':
+                    return `
+                        <div style="background: #e9d5ff; border-left: 4px solid #8b5cf6; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                            <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">📚 ${data.title}</h3>
+                            <div style="background: white; padding: 1rem; border-radius: 6px;">
+                                <div style="margin-bottom: 1rem;">
+                                    <h3 style="font-size: 1.25rem; font-weight: bold; color: #8b5cf6; margin-bottom: 0.5rem;">${data.rule}</h3>
+                                    <p style="color: #374151; margin-bottom: 1rem; line-height: 1.6;">${data.explanation}</p>
+                                </div>
+                                
+                                <div style="background: #f3f4f6; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem;">
+                                    <h4 style="font-size: 0.875rem; font-weight: 600; color: #6b7280; margin-bottom: 0.5rem;">FORMAZIONE:</h4>
+                                    <p style="font-family: monospace; color: #374151; font-weight: 500;">${data.formation}</p>
+                                </div>
+                                
+                                <div style="margin-bottom: 1rem;">
+                                    <h4 style="font-size: 0.875rem; font-weight: 600; color: #6b7280; margin-bottom: 0.75rem;">ESEMPI:</h4>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                        ${data.examples.map(example => `
+                                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: #f9fafb; border-radius: 4px;">
+                                                <span style="color: #3b82f6; font-weight: 500;">${example.english}</span>
+                                                <button onclick="speakText('${example.english}')" style="background: none; border: none; color: #3b82f6; cursor: pointer; font-size: 1rem;">🔊</button>
+                                            </div>
+                                            <div style="color: #6b7280; font-size: 0.875rem; margin-left: 0.5rem; margin-bottom: 0.5rem;">${example.italian}</div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                
+                                ${data.notes ? `
+                                    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 0.75rem; border-radius: 4px;">
+                                        <h4 style="font-size: 0.875rem; font-weight: 600; color: #92400e; margin-bottom: 0.25rem;">💡 NOTA:</h4>
+                                        <p style="color: #92400e; font-size: 0.875rem; margin: 0;">${data.notes}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                
+                case 'text':
+                    return `
+                        <div style="background: #fed7aa; border-left: 4px solid #f97316; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                            <h3 style="font-size: 1.125rem; font-weight: bold; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">📄 ${data.title}</h3>
+                            <div style="background: white; padding: 1rem; border-radius: 6px;">
+                                <p style="line-height: 1.6;">${data.content}</p>
+                            </div>
+                        </div>
+                    `;
+                
+                default:
+                    return '<div>Elemento non riconosciuto</div>';
+            }
+        }
+
+        // Helper functions for modal forms
+        function addPairRow() {
+            const pairsList = document.getElementById('pairs-list');
+            const newRow = document.createElement('div');
+            newRow.style.display = 'grid';
+            newRow.style.gridTemplateColumns = '1fr 1fr';
+            newRow.style.gap = '0.5rem';
+            newRow.style.marginBottom = '0.5rem';
+            newRow.innerHTML = `
+                <input type="text" placeholder="Parola inglese" class="pair-english form-input">
+                <input type="text" placeholder="Traduzione italiana" class="pair-italian form-input">
+            `;
+            pairsList.appendChild(newRow);
+        }
+
+        function addDialogueLine() {
+            const dialogueList = document.getElementById('dialogue-list');
+            const newRow = document.createElement('div');
+            newRow.style.display = 'grid';
+            newRow.style.gridTemplateColumns = '60px 1fr 1fr';
+            newRow.style.gap = '0.5rem';
+            newRow.style.marginBottom = '0.5rem';
+            newRow.style.alignItems = 'start';
+            newRow.innerHTML = `
+                <select class="dialogue-speaker form-input">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                </select>
+                <textarea placeholder="Testo in lingua straniera" class="dialogue-text form-textarea" rows="2"></textarea>
+                <textarea placeholder="Traduzione" class="dialogue-translation form-textarea" rows="2"></textarea>
+            `;
+            dialogueList.appendChild(newRow);
+        }
+
+        function addPhraseRow() {
+            const phrasesList = document.getElementById('phrases-list');
+            const newRow = document.createElement('div');
+            newRow.style.display = 'grid';
+            newRow.style.gridTemplateColumns = '1fr 1fr 1fr';
+            newRow.style.gap = '0.5rem';
+            newRow.style.marginBottom = '0.5rem';
+            newRow.innerHTML = `
+                <input type="text" placeholder="Frase" class="phrase-text form-input">
+                <input type="text" placeholder="Traduzione" class="phrase-translation form-input">
+                <input type="text" placeholder="Uso" class="phrase-usage form-input">
+            `;
+            phrasesList.appendChild(newRow);
+        }
+
+        function addWordRow() {
+            const wordsList = document.getElementById('words-list');
+            const newRow = document.createElement('div');
+            newRow.style.display = 'grid';
+            newRow.style.gridTemplateColumns = '1fr 1fr 1fr';
+            newRow.style.gap = '0.5rem';
+            newRow.style.marginBottom = '0.5rem';
+            newRow.innerHTML = `
+                <input type="text" placeholder="Parola straniera" class="word-foreign form-input">
+                <input type="text" placeholder="Traduzione" class="word-italian form-input'>
+                <input type="text" placeholder="Esempio" class="word-example form-input">
+            `;
+            wordsList.appendChild(newRow);
+        }
+
+        function addExampleRow() {
+            const examplesList = document.getElementById('examples-list');
+            const newRow = document.createElement('div');
+            newRow.style.display = 'grid';
+            newRow.style.gridTemplateColumns = '1fr 1fr';
+            newRow.style.gap = '0.5rem';
+            newRow.style.marginBottom = '0.5rem';
+            newRow.innerHTML = `
+                <input type="text" placeholder="Frase inglese" class="example-english form-input">
+                <input type="text" placeholder="Traduzione italiana" class="example-italian form-input">
+            `;
+            examplesList.appendChild(newRow);
+        }
+
+        // Expose functions to global scope for onclick attributes
+        window.speakText = speakText;
+        window.checkFreeTextAnswer = checkFreeTextAnswer;
+        window.checkDragDropAnswers = checkDragDropAnswers;
+        window.checkFillBlankAnswers = checkFillBlankAnswers;
+        window.addPairRow = addPairRow;
+        window.addDialogueLine = addDialogueLine;
+        window.addPhraseRow = addPhraseRow;
+        window.addWordRow = addWordRow;
+        window.addExampleRow = addExampleRow;
+        window.selectAllCode = selectAllCode;
+    </script>
+</body>
+</html>

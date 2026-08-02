@@ -1,50 +1,1481 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Esercizi e Quiz Cinese</title>
-  <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Indie Flower', cursive, sans-serif;
-      background: #f4f4f9;
-      color: #333;
-      padding: 30px;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-    }
-    .card {
-      background: white;
-      padding: 30px;
-      border-radius: 20px;
-      max-width: 600px;
-      width: 100%;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      border: 2px solid #ffdae9;
-    }
-    h1 { color: #d81b60; margin-top: 0; }
-    .quiz-option {
-      background: #e1f5fe;
-      padding: 12px 20px;
-      margin: 10px 0;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    .quiz-option:hover { transform: scale(1.02); background: #b3e5fc; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generatore Quiz Interattivi - Cinese</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .drag-item {
+            cursor: move;
+            transition: all 0.2s ease;
+        }
+        .drag-item:hover {
+            transform: scale(1.02);
+        }
+        .drag-over {
+            border-color: #8b5cf6 !important;
+            background-color: #f3f4f6 !important;
+        }
+        .fill-blank {
+            display: inline-block;
+            min-width: 100px;
+            border-bottom: 2px solid #6b7280;
+            margin: 0 4px;
+            padding: 2px 8px;
+        }
+        .chinese-char {
+            font-size: 2rem;
+            font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        }
+        .pinyin-text {
+            font-family: "Times New Roman", serif;
+            font-style: italic;
+        }
+        .tone-1 { color: #ef4444; }
+        .tone-2 { color: #f97316; }
+        .tone-3 { color: #10b981; }
+        .tone-4 { color: #3b82f6; }
+        .tone-0 { color: #6b7280; }
+    </style>
 </head>
-<body>
-  <div class="card">
-    <h1>📝 Esercizi di Lingua Cinese</h1>
-    <p>Benvenuto nell'app Esercizi! Metti alla prova i tuoi vocaboli e i toni della lingua cinese.</p>
-    <hr style="border: 0; border-top: 1px dashed #ccc; margin: 20px 0;">
-    <h3>Domanda 1: Cosa significa "你好" (Nǐ hǎo)?</h3>
-    <div class="quiz-option" onclick="alert('Esatto! 🎉 你好 significa Ciao!')">A) Ciao!</div>
-    <div class="quiz-option" onclick="alert('Riprova! 😅')">B) Arrivederci</div>
-    <div class="quiz-option" onclick="alert('Riprova! 😅')">C) Grazie</div>
-  </div>
+<body class="bg-gradient-to-br from-red-50 to-yellow-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-8 fade-in">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🇨🇳 Generatore Quiz Cinese</h1>
+            <p class="text-gray-600">Crea esercizi interattivi per imparare il cinese</p>
+            
+<button class="inline-flex items-center justify-center rounded-md px-4 py-2 text-base text-white font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 active:transform active:scale-95" onclick="window.history.back()">
+ <span class="mr-2"> <svg class="w-6 h-6" fill="none" stroke="#EF4444" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+</svg> </span>home
+</button>        </div>
+
+        <!-- Quiz Builder -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6 fade-in">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">📝 Crea il tuo Quiz</h2>
+            
+            <!-- Quiz Title -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Titolo del Quiz</label>
+                <input type="text" id="quizTitle" placeholder="Inserisci il titolo del quiz..." 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+            </div>
+
+            <!-- Current Question Builder -->
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 mb-4">
+                <h3 class="text-lg font-medium text-gray-700 mb-3">Domanda <span id="questionNumber">1</span></h3>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipo di esercizio</label>
+                    <select id="questionType" onchange="changeQuestionType()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        <option value="multiple">📝 Scelta multipla</option>
+                        <option value="open">✍️ Risposta aperta</option>
+                        <option value="fill">📋 Riempimento spazi</option>
+                        <option value="drag">🔄 Drag & Drop</option>
+                        <option value="chinese-translation">🇨🇳 Traduzione cinese</option>
+                        <option value="chinese-pinyin">🎵 Abbinamento Pinyin</option>
+                        <option value="chinese-order">📝 Riordino caratteri</option>
+                        <option value="chinese-fill">🔤 Pinyin mancante</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Testo della domanda</label>
+                    <input type="text" id="questionText" placeholder="Scrivi la tua domanda..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                    <div id="fillHelp" class="text-xs text-gray-500 mt-1" style="display: none;">
+                        💡 Per il riempimento spazi, usa _____ (5 underscore) dove vuoi gli spazi vuoti
+                    </div>
+                    <div id="chineseFillHelp" class="text-xs text-gray-500 mt-1" style="display: none;">
+                        💡 Usa _____ per il pinyin mancante. Es: 你好 nǐ _____ (risposta: hǎo)
+                    </div>
+                </div>
+
+                <!-- Multiple Choice Options -->
+                <div id="multipleOptions" class="mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Opzione A</label>
+                            <input type="text" id="optionA" placeholder="Prima opzione..." 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Opzione B</label>
+                            <input type="text" id="optionB" placeholder="Seconda opzione..." 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Opzione C</label>
+                            <input type="text" id="optionC" placeholder="Terza opzione..." 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Opzione D</label>
+                            <input type="text" id="optionD" placeholder="Quarta opzione..." 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Risposta corretta</label>
+                        <select id="correctAnswer" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                            <option value="">Seleziona la risposta corretta</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Open Answer Options -->
+                <div id="openOptions" class="mb-4" style="display: none;">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Risposta corretta</label>
+                        <input type="text" id="openAnswer" placeholder="Inserisci la risposta corretta..." 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        <div class="text-xs text-gray-500 mt-1">
+                            💡 Puoi inserire più risposte separate da virgola (es: Roma, roma, ROMA)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fill Blanks Options -->
+                <div id="fillOptions" class="mb-4" style="display: none;">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Risposte per gli spazi (separate da virgola)</label>
+                        <input type="text" id="fillAnswers" placeholder="risposta1, risposta2, risposta3..." 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        <div class="text-xs text-gray-500 mt-1">
+                            💡 Inserisci le risposte nell'ordine degli spazi vuoti nella domanda
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drag and Drop Options -->
+                <div id="dragOptions" class="mb-4" style="display: none;">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Elementi da trascinare (uno per riga)</label>
+                        <textarea id="dragItems" rows="4" placeholder="Elemento 1&#10;Elemento 2&#10;Elemento 3&#10;Elemento 4" 
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ordine corretto (numeri separati da virgola)</label>
+                        <input type="text" id="dragOrder" placeholder="1,2,3,4" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                        <div class="text-xs text-gray-500 mt-1">
+                            💡 Indica l'ordine corretto degli elementi (es: 1,2,3,4 o 3,1,4,2)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chinese Translation Options -->
+                <div id="chineseTranslationOptions" class="mb-4" style="display: none;">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Caratteri cinesi</label>
+                            <input type="text" id="chineseChars" placeholder="你好" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent chinese-char">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Pinyin</label>
+                            <input type="text" id="chinesePinyin" placeholder="nǐ hǎo" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent pinyin-text">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Traduzione italiana</label>
+                        <input type="text" id="chineseTranslation" placeholder="ciao" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Direzione traduzione</label>
+                        <select id="translationDirection" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                            <option value="cn-to-it">Cinese → Italiano</option>
+                            <option value="it-to-cn">Italiano → Cinese</option>
+                            <option value="pinyin-to-cn">Pinyin → Caratteri</option>
+                            <option value="cn-to-pinyin">Caratteri → Pinyin</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Chinese Pinyin Matching Options -->
+                <div id="chinesePinyinOptions" class="mb-4" style="display: none;">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Caratteri cinesi (uno per riga)</label>
+                        <textarea id="pinyinChars" rows="4" placeholder="你&#10;好&#10;世&#10;界" 
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent chinese-char"></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pinyin corrispondenti (uno per riga)</label>
+                        <textarea id="pinyinSounds" rows="4" placeholder="nǐ&#10;hǎo&#10;shì&#10;jiè" 
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent pinyin-text"></textarea>
+                    </div>
+                </div>
+
+                <!-- Chinese Character Order Options -->
+                <div id="chineseOrderOptions" class="mb-4" style="display: none;">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Frase completa</label>
+                        <input type="text" id="chinesePhrase" placeholder="我爱你" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent chinese-char">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Traduzione/Pinyin (opzionale)</label>
+                        <input type="text" id="phraseTranslation" placeholder="wǒ ài nǐ / ti amo" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <!-- Chinese Fill Pinyin Options -->
+                <div id="chineseFillOptions" class="mb-4" style="display: none;">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pinyin mancanti (separati da virgola)</label>
+                        <input type="text" id="chineseFillAnswers" placeholder="hǎo, jiè" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent pinyin-text">
+                        <div class="text-xs text-gray-500 mt-1">
+                            💡 Inserisci i pinyin nell'ordine degli spazi vuoti nella domanda
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="addQuestion()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                    ➕ Aggiungi Esercizio
+                </button>
+            </div>
+        </div>
+
+        <!-- Questions List -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6" id="questionsList" style="display: none;">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">📋 Esercizi Aggiunti</h3>
+            <div id="questionsContainer"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="previewQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+                    👁️ Anteprima Quiz
+                </button>
+                <button onclick="downloadQuiz()" class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+                    💾 Scarica HTML
+                </button>
+                <button onclick="clearAll()" class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+                    🗑️ Cancella Tutto
+                </button>
+            </div>
+        </div>
+
+        <!-- Preview Modal -->
+        <div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-bold text-gray-800">👁️ Anteprima Quiz</h3>
+                        <button onclick="closePreview()" class="text-gray-500 hover:text-gray-700 text-2xl">✕</button>
+                    </div>
+                    <div id="previewContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let questions = [];
+        let currentQuestionIndex = 1;
+
+        function changeQuestionType() {
+            const type = document.getElementById('questionType').value;
+            
+            // Hide all option sections
+            document.getElementById('multipleOptions').style.display = 'none';
+            document.getElementById('openOptions').style.display = 'none';
+            document.getElementById('fillOptions').style.display = 'none';
+            document.getElementById('dragOptions').style.display = 'none';
+            document.getElementById('chineseTranslationOptions').style.display = 'none';
+            document.getElementById('chinesePinyinOptions').style.display = 'none';
+            document.getElementById('chineseOrderOptions').style.display = 'none';
+            document.getElementById('chineseFillOptions').style.display = 'none';
+            document.getElementById('fillHelp').style.display = 'none';
+            document.getElementById('chineseFillHelp').style.display = 'none';
+            
+            // Show relevant section
+            switch(type) {
+                case 'multiple':
+                    document.getElementById('multipleOptions').style.display = 'block';
+                    break;
+                case 'open':
+                    document.getElementById('openOptions').style.display = 'block';
+                    break;
+                case 'fill':
+                    document.getElementById('fillOptions').style.display = 'block';
+                    document.getElementById('fillHelp').style.display = 'block';
+                    break;
+                case 'drag':
+                    document.getElementById('dragOptions').style.display = 'block';
+                    break;
+                case 'chinese-translation':
+                    document.getElementById('chineseTranslationOptions').style.display = 'block';
+                    break;
+                case 'chinese-pinyin':
+                    document.getElementById('chinesePinyinOptions').style.display = 'block';
+                    break;
+                case 'chinese-order':
+                    document.getElementById('chineseOrderOptions').style.display = 'block';
+                    break;
+                case 'chinese-fill':
+                    document.getElementById('chineseFillOptions').style.display = 'block';
+                    document.getElementById('chineseFillHelp').style.display = 'block';
+                    break;
+            }
+        }
+
+        function addQuestion() {
+            const questionText = document.getElementById('questionText').value.trim();
+            const questionType = document.getElementById('questionType').value;
+            
+            if (!questionText) {
+                alert('⚠️ Inserisci il testo della domanda!');
+                return;
+            }
+
+            let question = {
+                id: currentQuestionIndex,
+                text: questionText,
+                type: questionType
+            };
+
+            // Validate and add type-specific data
+            switch(questionType) {
+                case 'multiple':
+                    const optionA = document.getElementById('optionA').value.trim();
+                    const optionB = document.getElementById('optionB').value.trim();
+                    const optionC = document.getElementById('optionC').value.trim();
+                    const optionD = document.getElementById('optionD').value.trim();
+                    const correctAnswer = document.getElementById('correctAnswer').value;
+
+                    if (!optionA || !optionB || !optionC || !optionD || !correctAnswer) {
+                        alert('⚠️ Compila tutte le opzioni e seleziona la risposta corretta!');
+                        return;
+                    }
+
+                    question.options = { A: optionA, B: optionB, C: optionC, D: optionD };
+                    question.correct = correctAnswer;
+                    break;
+
+                case 'open':
+                    const openAnswer = document.getElementById('openAnswer').value.trim();
+                    if (!openAnswer) {
+                        alert('⚠️ Inserisci la risposta corretta!');
+                        return;
+                    }
+                    question.correct = openAnswer.split(',').map(a => a.trim());
+                    break;
+
+                case 'fill':
+                    const fillAnswers = document.getElementById('fillAnswers').value.trim();
+                    if (!fillAnswers || !questionText.includes('_____')) {
+                        alert('⚠️ Inserisci le risposte e assicurati che la domanda contenga _____ per gli spazi vuoti!');
+                        return;
+                    }
+                    question.correct = fillAnswers.split(',').map(a => a.trim());
+                    break;
+
+                case 'drag':
+                    const dragItems = document.getElementById('dragItems').value.trim();
+                    const dragOrder = document.getElementById('dragOrder').value.trim();
+                    if (!dragItems || !dragOrder) {
+                        alert('⚠️ Inserisci gli elementi da trascinare e l\'ordine corretto!');
+                        return;
+                    }
+                    question.items = dragItems.split('\n').map(item => item.trim()).filter(item => item);
+                    question.correct = dragOrder.split(',').map(n => parseInt(n.trim()) - 1);
+                    break;
+
+                case 'chinese-translation':
+                    const chineseChars = document.getElementById('chineseChars').value.trim();
+                    const chinesePinyin = document.getElementById('chinesePinyin').value.trim();
+                    const chineseTranslation = document.getElementById('chineseTranslation').value.trim();
+                    const translationDirection = document.getElementById('translationDirection').value;
+                    
+                    if (!chineseChars || !chinesePinyin || !chineseTranslation) {
+                        alert('⚠️ Compila caratteri, pinyin e traduzione!');
+                        return;
+                    }
+                    
+                    question.chinese = chineseChars;
+                    question.pinyin = chinesePinyin;
+                    question.translation = chineseTranslation;
+                    question.direction = translationDirection;
+                    break;
+
+                case 'chinese-pinyin':
+                    const pinyinChars = document.getElementById('pinyinChars').value.trim();
+                    const pinyinSounds = document.getElementById('pinyinSounds').value.trim();
+                    
+                    if (!pinyinChars || !pinyinSounds) {
+                        alert('⚠️ Inserisci caratteri e pinyin corrispondenti!');
+                        return;
+                    }
+                    
+                    const chars = pinyinChars.split('\n').map(c => c.trim()).filter(c => c);
+                    const sounds = pinyinSounds.split('\n').map(s => s.trim()).filter(s => s);
+                    
+                    if (chars.length !== sounds.length) {
+                        alert('⚠️ Il numero di caratteri deve corrispondere al numero di pinyin!');
+                        return;
+                    }
+                    
+                    question.characters = chars;
+                    question.pinyins = sounds;
+                    break;
+
+                case 'chinese-order':
+                    const chinesePhrase = document.getElementById('chinesePhrase').value.trim();
+                    const phraseTranslation = document.getElementById('phraseTranslation').value.trim();
+                    
+                    if (!chinesePhrase) {
+                        alert('⚠️ Inserisci la frase cinese!');
+                        return;
+                    }
+                    
+                    question.phrase = chinesePhrase;
+                    question.hint = phraseTranslation;
+                    question.characters = chinesePhrase.split('');
+                    break;
+
+                case 'chinese-fill':
+                    const chineseFillAnswers = document.getElementById('chineseFillAnswers').value.trim();
+                    if (!chineseFillAnswers || !questionText.includes('_____')) {
+                        alert('⚠️ Inserisci i pinyin mancanti e assicurati che la domanda contenga _____ per gli spazi vuoti!');
+                        return;
+                    }
+                    question.correct = chineseFillAnswers.split(',').map(a => a.trim());
+                    break;
+            }
+
+            questions.push(question);
+            currentQuestionIndex++;
+
+            // Clear form
+            clearQuestionForm();
+            document.getElementById('questionNumber').textContent = currentQuestionIndex;
+
+            updateQuestionsList();
+            
+            // Success message
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '✅ Aggiunto!';
+            button.classList.add('bg-green-600');
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('bg-green-600');
+            }, 1500);
+        }
+
+        function clearQuestionForm() {
+            document.getElementById('questionText').value = '';
+            document.getElementById('optionA').value = '';
+            document.getElementById('optionB').value = '';
+            document.getElementById('optionC').value = '';
+            document.getElementById('optionD').value = '';
+            document.getElementById('correctAnswer').value = '';
+            document.getElementById('openAnswer').value = '';
+            document.getElementById('fillAnswers').value = '';
+            document.getElementById('dragItems').value = '';
+            document.getElementById('dragOrder').value = '';
+            document.getElementById('chineseChars').value = '';
+            document.getElementById('chinesePinyin').value = '';
+            document.getElementById('chineseTranslation').value = '';
+            document.getElementById('translationDirection').value = 'cn-to-it';
+            document.getElementById('pinyinChars').value = '';
+            document.getElementById('pinyinSounds').value = '';
+            document.getElementById('chinesePhrase').value = '';
+            document.getElementById('phraseTranslation').value = '';
+            document.getElementById('chineseFillAnswers').value = '';
+            document.getElementById('questionType').value = 'multiple';
+            changeQuestionType();
+        }
+
+        function updateQuestionsList() {
+            const container = document.getElementById('questionsContainer');
+            const listDiv = document.getElementById('questionsList');
+            
+            if (questions.length === 0) {
+                listDiv.style.display = 'none';
+                return;
+            }
+
+            listDiv.style.display = 'block';
+            container.innerHTML = '';
+
+            questions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'border border-gray-200 rounded-lg p-4 mb-3';
+                
+                let typeIcon = '';
+                let optionsHtml = '';
+                let correctHtml = '';
+                
+                switch(question.type) {
+                    case 'multiple':
+                        typeIcon = '📝';
+                        optionsHtml = `
+                            <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                                <span>A) ${escapeHtml(question.options.A)}</span>
+                                <span>B) ${escapeHtml(question.options.B)}</span>
+                                <span>C) ${escapeHtml(question.options.C)}</span>
+                                <span>D) ${escapeHtml(question.options.D)}</span>
+                            </div>`;
+                        correctHtml = `✓ Risposta corretta: ${question.correct}`;
+                        break;
+                    case 'open':
+                        typeIcon = '✍️';
+                        correctHtml = `✓ Risposte accettate: ${question.correct.join(', ')}`;
+                        break;
+                    case 'fill':
+                        typeIcon = '📋';
+                        correctHtml = `✓ Risposte: ${question.correct.join(', ')}`;
+                        break;
+                    case 'drag':
+                        typeIcon = '🔄';
+                        optionsHtml = `
+                            <div class="text-sm text-gray-600 mb-2">
+                                <strong>Elementi:</strong> ${question.items.join(', ')}
+                            </div>`;
+                        correctHtml = `✓ Ordine corretto: ${question.correct.map(i => i + 1).join(', ')}`;
+                        break;
+                    case 'chinese-translation':
+                        typeIcon = '🇨🇳';
+                        optionsHtml = `
+                            <div class="text-sm text-gray-600 mb-2">
+                                <span class="chinese-char">${escapeHtml(question.chinese)}</span> 
+                                <span class="pinyin-text">${escapeHtml(question.pinyin)}</span> 
+                                → ${escapeHtml(question.translation)}
+                            </div>`;
+                        correctHtml = `✓ Direzione: ${question.direction}`;
+                        break;
+                    case 'chinese-pinyin':
+                        typeIcon = '🎵';
+                        optionsHtml = `
+                            <div class="text-sm text-gray-600 mb-2">
+                                <strong>Caratteri:</strong> <span class="chinese-char">${question.characters.join(' ')}</span><br>
+                                <strong>Pinyin:</strong> <span class="pinyin-text">${question.pinyins.join(' ')}</span>
+                            </div>`;
+                        correctHtml = `✓ Abbinamento caratteri-pinyin`;
+                        break;
+                    case 'chinese-order':
+                        typeIcon = '📝';
+                        optionsHtml = `
+                            <div class="text-sm text-gray-600 mb-2">
+                                <strong>Frase:</strong> <span class="chinese-char">${escapeHtml(question.phrase)}</span>
+                                ${question.hint ? `<br><strong>Aiuto:</strong> ${escapeHtml(question.hint)}` : ''}
+                            </div>`;
+                        correctHtml = `✓ Riordino caratteri cinesi`;
+                        break;
+                    case 'chinese-fill':
+                        typeIcon = '🔤';
+                        correctHtml = `✓ Pinyin mancanti: ${question.correct.join(', ')}`;
+                        break;
+                }
+                
+                questionDiv.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h4 class="font-medium text-gray-800 mb-2">${typeIcon} ${index + 1}. ${escapeHtml(question.text)}</h4>
+                            ${optionsHtml}
+                            <p class="text-sm text-green-600 mt-2">${correctHtml}</p>
+                        </div>
+                        <button onclick="removeQuestion(${index})" class="text-red-500 hover:text-red-700 ml-4 text-xl">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+                container.appendChild(questionDiv);
+            });
+        }
+
+        function removeQuestion(index) {
+            questions.splice(index, 1);
+            updateQuestionsList();
+        }
+
+        function previewQuiz() {
+            const title = document.getElementById('quizTitle').value.trim() || 'Quiz Cinese';
+            
+            if (questions.length === 0) {
+                alert('⚠️ Aggiungi almeno un esercizio per vedere l\'anteprima!');
+                return;
+            }
+
+            const previewContent = document.getElementById('previewContent');
+            previewContent.innerHTML = `
+                <div class="text-center p-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">🇨🇳 ${escapeHtml(title)}</h2>
+                    <p class="text-gray-600 mb-4">Quiz con ${questions.length} esercizi</p>
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <p class="text-red-800 font-medium">Il quiz sarà completamente funzionante nel file HTML scaricato!</p>
+                        <p class="text-red-600 text-sm mt-2">Include tutti i tipi di esercizi per il cinese con caratteri, pinyin e traduzioni</p>
+                    </div>
+                    <div class="mt-4 text-left bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-gray-700 mb-2">Anteprima esercizi:</h4>
+                        ${questions.slice(0, 3).map((q, i) => `
+                            <div class="mb-2">
+                                <span class="text-sm text-gray-600">${i + 1}. ${escapeHtml(q.text)}</span>
+                            </div>
+                        `).join('')}
+                        ${questions.length > 3 ? `<div class="text-sm text-gray-500">... e altri ${questions.length - 3} esercizi</div>` : ''}
+                    </div>
+                </div>
+            `;
+            document.getElementById('previewModal').classList.remove('hidden');
+            document.getElementById('previewModal').classList.add('flex');
+        }
+
+        function closePreview() {
+            document.getElementById('previewModal').classList.add('hidden');
+            document.getElementById('previewModal').classList.remove('flex');
+        }
+
+        function downloadQuiz() {
+            const title = document.getElementById('quizTitle').value.trim() || 'Quiz Cinese';
+            
+            if (questions.length === 0) {
+                alert('⚠️ Aggiungi almeno un esercizio per scaricare il quiz!');
+                return;
+            }
+
+            const htmlContent = generateQuizHTML(title, questions);
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = sanitizeFilename(title) + '_quiz_cinese.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            // Success feedback
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '✅ Scaricato!';
+            button.classList.add('bg-green-600');
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('bg-green-600');
+            }, 2000);
+        }
+
+        function generateQuizHTML(title, questionsData) {
+            const escapedTitle = escapeHtml(title);
+            const questionsJSON = JSON.stringify(questionsData);
+            
+            return `<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapedTitle}</title>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <style>
+        .correct { background-color: #10b981 !important; color: white !important; }
+        .incorrect { background-color: #ef4444 !important; color: white !important; }
+        .disabled { pointer-events: none; opacity: 0.7; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .drag-item {
+            cursor: move;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .drag-item:hover {
+            transform: scale(1.02);
+        }
+        .drag-over {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+        }
+        .fill-blank {
+            display: inline-block;
+            min-width: 100px;
+            border-bottom: 2px solid #6b7280;
+            margin: 0 4px;
+            padding: 2px 8px;
+            background: transparent;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            outline: none;
+        }
+        .fill-blank:focus {
+            border-bottom-color: #ef4444;
+        }
+        .fill-correct {
+            border-bottom-color: #10b981 !important;
+            background-color: #dcfce7 !important;
+        }
+        .fill-incorrect {
+            border-bottom-color: #ef4444 !important;
+            background-color: #fee2e2 !important;
+        }
+        .chinese-char {
+            font-size: 2rem;
+            font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        }
+        .pinyin-text {
+            font-family: "Times New Roman", serif;
+            font-style: italic;
+        }
+        .tone-1 { color: #ef4444; }
+        .tone-2 { color: #f97316; }
+        .tone-3 { color: #10b981; }
+        .tone-4 { color: #3b82f6; }
+        .tone-0 { color: #6b7280; }
+        .match-item {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .match-item:hover {
+            transform: scale(1.05);
+        }
+        .match-selected {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+        }
+        .match-correct {
+            border-color: #10b981 !important;
+            background-color: #dcfce7 !important;
+        }
+        .match-incorrect {
+            border-color: #ef4444 !important;
+            background-color: #fee2e2 !important;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-red-50 to-yellow-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-3xl">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🇨🇳 ${escapedTitle}</h1>
+            <p class="text-gray-600">Esercizi interattivi per imparare il cinese</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6" id="quizSection">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-lg font-medium text-gray-700">Esercizio <span id="currentQ">1</span> di ${questionsData.length}</span>
+                <span class="text-lg font-medium text-red-600">Punteggio: <span id="score">0</span>/${questionsData.length}</span>
+            </div>
+            
+            <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
+                <div id="progress" class="bg-red-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+
+            <div id="quizContainer" class="fade-in"></div>
+
+            <div class="flex justify-between mt-6">
+                <button id="prevBtn" onclick="previousQuestion()" class="bg-gray-500 text-white px-6 py-2 rounded-lg font-medium transition-colors opacity-50" disabled>
+                    ← Precedente
+                </button>
+                <button id="nextBtn" onclick="nextQuestion()" class="bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors opacity-50" disabled>
+                    Successivo →
+                </button>
+            </div>
+        </div>
+
+        <div id="results" class="bg-white rounded-xl shadow-lg p-6 text-center fade-in" style="display: none;">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">🎉 Esercizi Completati!</h2>
+            <div id="finalScore" class="text-6xl font-bold text-red-600 mb-4"></div>
+            <p id="scoreMessage" class="text-xl text-gray-600 mb-6"></p>
+            <button onclick="restartQuiz()" class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+                🔄 Ricomincia Esercizi
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = ${questionsJSON};
+        let currentQuestion = 0;
+        let userAnswers = [];
+        let quizScore = 0;
+        let selectedMatches = {};
+
+        function loadQuestion() {
+            const question = quizData[currentQuestion];
+            const container = document.getElementById('quizContainer');
+            let html = '';
+            
+            switch(question.type) {
+                case 'multiple':
+                    html = 
+                        '<h3 class="text-xl font-semibold text-gray-800 mb-6">' + escapeHtml(question.text) + '</h3>' +
+                        '<div class="space-y-3">' +
+                            '<button onclick="selectAnswer(\\'A\\')" id="optionA" class="w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition-all">' +
+                                '<span class="font-medium">A)</span> ' + escapeHtml(question.options.A) +
+                            '</button>' +
+                            '<button onclick="selectAnswer(\\'B\\')" id="optionB" class="w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition-all">' +
+                                '<span class="font-medium">B)</span> ' + escapeHtml(question.options.B) +
+                            '</button>' +
+                            '<button onclick="selectAnswer(\\'C\\')" id="optionC" class="w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition-all">' +
+                                '<span class="font-medium">C)</span> ' + escapeHtml(question.options.C) +
+                            '</button>' +
+                            '<button onclick="selectAnswer(\\'D\\')" id="optionD" class="w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition-all">' +
+                                '<span class="font-medium">D)</span> ' + escapeHtml(question.options.D) +
+                            '</button>' +
+                        '</div>';
+                    break;
+                    
+                case 'open':
+                    html = 
+                        '<h3 class="text-xl font-semibold text-gray-800 mb-6">' + escapeHtml(question.text) + '</h3>' +
+                        '<div class="space-y-4">' +
+                            '<textarea id="openInput" placeholder="Scrivi la tua risposta qui..." class="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-red-300 focus:outline-none resize-none" rows="4"></textarea>' +
+                            '<button onclick="submitOpenAnswer()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">Conferma Risposta</button>' +
+                        '</div>';
+                    break;
+                    
+                case 'fill':
+                    let fillText = escapeHtml(question.text);
+                    let blankIndex = 0;
+                    fillText = fillText.replace(/_____/g, () => {
+                        return '<input type="text" id="blank' + (blankIndex++) + '" class="fill-blank" placeholder="...">';
+                    });
+                    html = 
+                        '<h3 class="text-xl font-semibold text-gray-800 mb-6">Completa gli spazi vuoti:</h3>' +
+                        '<div class="text-lg leading-relaxed mb-6">' + fillText + '</div>' +
+                        '<button onclick="submitFillAnswer()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">Conferma Risposte</button>';
+                    break;
+                    
+                case 'drag':
+                    html = 
+                        '<h3 class="text-xl font-semibold text-gray-800 mb-6">' + escapeHtml(question.text) + '</h3>' +
+                        '<div class="mb-6">' +
+                            '<h4 class="text-lg font-medium text-gray-700 mb-3">Trascina gli elementi nell\\'ordine corretto:</h4>' +
+                            '<div id="dragItems" class="grid grid-cols-2 gap-3 mb-4">';
+                    
+                    const shuffledItems = [...question.items].sort(() => Math.random() - 0.5);
+                    shuffledItems.forEach((item, index) => {
+                        html += '<div class="drag-item bg-red-100 border-2 border-red-200 rounded-lg p-3 text-center font-medium" draggable="true" data-item="' + escapeHtml(item) + '">' + escapeHtml(item) + '</div>';
+                    });
+                    
+                    html += '</div>' +
+                            '<h4 class="text-lg font-medium text-gray-700 mb-3">Ordine corretto:</h4>' +
+                            '<div id="dropZone" class="space-y-2">';
+                    
+                    for(let i = 0; i < question.items.length; i++) {
+                        html += '<div class="drop-slot border-2 border-dashed border-gray-300 rounded-lg p-4 min-h-[60px] flex items-center justify-center text-gray-500" data-position="' + i + '">Posizione ' + (i + 1) + '</div>';
+                    }
+                    
+                    html += '</div>' +
+                        '</div>';
+                    break;
+
+                case 'chinese-translation':
+                    let prompt = '';
+                    let answer = '';
+                    
+                    switch(question.direction) {
+                        case 'cn-to-it':
+                            prompt = '<div class="chinese-char text-center mb-4">' + escapeHtml(question.chinese) + '</div>' +
+                                    '<div class="pinyin-text text-center mb-6 text-lg">' + escapeHtml(question.pinyin) + '</div>';
+                            answer = question.translation;
+                            break;
+                        case 'it-to-cn':
+                            prompt = '<div class="text-center mb-6 text-xl">' + escapeHtml(question.translation) + '</div>';
+                            answer = question.chinese;
+                            break;
+                        case 'pinyin-to-cn':
+                            prompt = '<div class="pinyin-text text-center mb-6 text-xl">' + escapeHtml(question.pinyin) + '</div>';
+                            answer = question.chinese;
+                            break;
+                        case 'cn-to-pinyin':
+                            prompt = '<div class="chinese-char text-center mb-6">' + escapeHtml(question.chinese) + '</div>';
+                            answer = question.pinyin;
+                            break;
+                    }
+                    
+                    html = 
+                        '<h3 class="text-xl font-semibold text-gray-800 mb-6">' + escapeHtml(question.text) + '</h3>' +
+                        prompt +
+                        '<div class="space-y-4">' +
+                            '<input type="text" id="translationInput" placeholder="Inserisci la traduzione..." class="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-red-300 focus:outline-none text-center text-lg">' +
+                            '<button onclick="submitTranslation(\\'' + escapeHtml(answer) + '\\')" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">Conferma Traduzione</button>' +
+                        '</div>';
+                    break;
+
+                case 'chinese-pinyin':
+                    selectedMatches = {};
+                    html = 
+                        '<h3 class="text-xl font-semibold text-gray-800 mb-6">' + escapeHtml(question.text) + '</h3>' +
+                        '<div class="grid grid-cols-1 md:grid-cols-2 gap-8">' +
+                            '<div>' +
+                                '<h4 class="text-lg font-medium text-gray-700 mb-4">Caratteri:</h4>' +
+                                '<div class="space-y-3">';
+                    
+                    question.characters.forEach((char, index) => {
+                        html += '<div class="match-item border-2 border-gray-200 rounded-lg p-4 text-center chinese-char cursor-pointer" data-type="char" data-index="' + index + '" onclick="selectMatch(\\'char\\', ' + index + ')">' + escapeHtml(char) + '</div>';
+                    });
+                    
+                    html += '</div></div><div>' +
+                            '<h4 class="text-lg font-medium text-gray-700 mb-4">Pinyin:</h4>' +
+                            '<div class="space-y-3">';
+                    
+                    const shuffledPinyins = question.pinyins.map((p, i) => ({pinyin: p, originalIndex: i}))
+                                                           .sort(() => Math.random() - 0.5);
+                    
+                    shuffledPinyins.forEach((item, displayIndex) => {
+                        html += '<div class="match-item border-2 border-gray-200 rounded-lg p-4 text-center pinyin-text cursor-pointer" data-type="pinyin" data-index="' + item.originalIndex + '" onclick="selectMatch(\\'pinyin\\', ' + item.originalIndex + ')">' + escapeHtml(item.pinyin) + '</div>';
+                    });
+                    
+                    html += '</div></div></div>' +
+                            '<div class="mt-6 text-center">' +
+                                '<button onclick="checkMatches()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">Verifica Abbinamenti</button>' +
+                            '</div>';
+                    break;
+
+                case 'chinese-order':
+                    html = 
+                        '<h3 class="text-xl font-semibold text-gray-800 mb-6">' + escapeHtml(question.text) + '</h3>';
+                    
+                    if (question.hint) {
+                        html += '<div class="text-center mb-6 p-4 bg-yellow-50 rounded-lg">' +
+                                '<span class="text-yellow-800">💡 Aiuto: ' + escapeHtml(question.hint) + '</span>' +
+                                '</div>';
+                    }
+                    
+                    html += '<div class="mb-6">' +
+                            '<h4 class="text-lg font-medium text-gray-700 mb-3">Trascina i caratteri nell\\'ordine corretto:</h4>' +
+                            '<div id="dragItems" class="flex flex-wrap gap-3 justify-center mb-4">';
+                    
+                    const shuffledChars = [...question.characters].sort(() => Math.random() - 0.5);
+                    shuffledChars.forEach((char, index) => {
+                        html += '<div class="drag-item bg-red-100 border-2 border-red-200 rounded-lg p-4 text-center chinese-char cursor-move" draggable="true" data-item="' + escapeHtml(char) + '">' + escapeHtml(char) + '</div>';
+                    });
+                    
+                    html += '</div>' +
+                            '<h4 class="text-lg font-medium text-gray-700 mb-3">Ordine corretto:</h4>' +
+                            '<div id="dropZone" class="flex flex-wrap gap-2 justify-center min-h-[80px] border-2 border-dashed border-gray-300 rounded-lg p-4">';
+                    
+                    for(let i = 0; i < question.characters.length; i++) {
+                        html += '<div class="drop-slot border-2 border-dashed border-gray-300 rounded-lg p-3 min-w-[60px] min-h-[60px] flex items-center justify-center text-gray-500 chinese-char" data-position="' + i + '">' + (i + 1) + '</div>';
+                    }
+                    
+                    html += '</div></div>';
+                    break;
+
+                case 'chinese-fill':
+                    let chineseFillText = escapeHtml(question.text);
+                    let chineseBlankIndex = 0;
+                    chineseFillText = chineseFillText.replace(/_____/g, () => {
+                        return '<input type="text" id="chineseBlank' + (chineseBlankIndex++) + '" class="fill-blank pinyin-text" placeholder="...">';
+                    });
+                    html = 
+                        '<h3 class="text-xl font-semibold text-gray-800 mb-6">Completa con il pinyin mancante:</h3>' +
+                        '<div class="text-lg leading-relaxed mb-6 text-center">' + chineseFillText + '</div>' +
+                        '<button onclick="submitChineseFillAnswer()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">Conferma Risposte</button>';
+                    break;
+            }
+            
+            container.innerHTML = html;
+
+            document.getElementById('currentQ').textContent = currentQuestion + 1;
+            document.getElementById('progress').style.width = ((currentQuestion + 1) / quizData.length) * 100 + '%';
+            
+            if(question.type === 'drag' || question.type === 'chinese-order') {
+                setupDragAndDrop();
+            }
+            
+            updateNavButtons();
+        }
+
+        function updateNavButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentQuestion === 0;
+            prevBtn.className = currentQuestion === 0 ? 
+                'bg-gray-500 text-white px-6 py-2 rounded-lg font-medium transition-colors opacity-50' :
+                'bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition-colors';
+            
+            nextBtn.disabled = true;
+            nextBtn.className = 'bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors opacity-50';
+        }
+
+        function selectAnswer(answer) {
+            const question = quizData[currentQuestion];
+            userAnswers[currentQuestion] = answer;
+            
+            ['A', 'B', 'C', 'D'].forEach(opt => {
+                const btn = document.getElementById('option' + opt);
+                btn.classList.add('disabled');
+                
+                if (opt === question.correct) {
+                    btn.classList.add('correct');
+                } else if (opt === answer && opt !== question.correct) {
+                    btn.classList.add('incorrect');
+                }
+            });
+            
+            if (answer === question.correct) {
+                quizScore++;
+                document.getElementById('score').textContent = quizScore;
+            }
+            
+            enableNextButton();
+        }
+
+        function submitOpenAnswer() {
+            const question = quizData[currentQuestion];
+            const userAnswer = document.getElementById('openInput').value.trim().toLowerCase();
+            
+            if (!userAnswer) {
+                alert('Inserisci una risposta!');
+                return;
+            }
+            
+            const isCorrect = question.correct.some(correct => 
+                correct.toLowerCase() === userAnswer
+            );
+            
+            userAnswers[currentQuestion] = userAnswer;
+            
+            const input = document.getElementById('openInput');
+            input.disabled = true;
+            
+            if (isCorrect) {
+                input.classList.add('correct');
+                quizScore++;
+                document.getElementById('score').textContent = quizScore;
+            } else {
+                input.classList.add('incorrect');
+            }
+            
+            const container = input.parentElement;
+            const feedback = document.createElement('div');
+            feedback.className = 'mt-3 p-3 rounded-lg ' + (isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+            feedback.innerHTML = isCorrect ? 
+                '✅ Corretto!' : 
+                '❌ Risposta errata. Risposte accettate: ' + question.correct.join(', ');
+            container.appendChild(feedback);
+            
+            enableNextButton();
+        }
+
+        function submitFillAnswer() {
+            const question = quizData[currentQuestion];
+            const blanks = document.querySelectorAll('.fill-blank');
+            const userAnswers = Array.from(blanks).map(blank => blank.value.trim().toLowerCase());
+            
+            if (userAnswers.some(answer => !answer)) {
+                alert('Completa tutti gli spazi vuoti!');
+                return;
+            }
+            
+            let correctCount = 0;
+            blanks.forEach((blank, index) => {
+                blank.disabled = true;
+                const isCorrect = question.correct[index] && 
+                    question.correct[index].toLowerCase() === userAnswers[index];
+                
+                if (isCorrect) {
+                    blank.classList.add('fill-correct');
+                    correctCount++;
+                } else {
+                    blank.classList.add('fill-incorrect');
+                }
+            });
+            
+            userAnswers[currentQuestion] = userAnswers;
+            
+            if (correctCount === question.correct.length) {
+                quizScore++;
+                document.getElementById('score').textContent = quizScore;
+            }
+            
+            const container = document.getElementById('quizContainer');
+            const feedback = document.createElement('div');
+            feedback.className = 'mt-4 p-3 rounded-lg ' + 
+                (correctCount === question.correct.length ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+            feedback.innerHTML = correctCount === question.correct.length ? 
+                '✅ Tutte le risposte sono corrette!' : 
+                '❌ Alcune risposte sono errate. Risposte corrette: ' + question.correct.join(', ');
+            container.appendChild(feedback);
+            
+            enableNextButton();
+        }
+
+        function submitChineseFillAnswer() {
+            const question = quizData[currentQuestion];
+            const blanks = document.querySelectorAll('[id^="chineseBlank"]');
+            const userAnswers = Array.from(blanks).map(blank => blank.value.trim().toLowerCase());
+            
+            if (userAnswers.some(answer => !answer)) {
+                alert('Completa tutti gli spazi vuoti!');
+                return;
+            }
+            
+            let correctCount = 0;
+            blanks.forEach((blank, index) => {
+                blank.disabled = true;
+                const isCorrect = question.correct[index] && 
+                    question.correct[index].toLowerCase() === userAnswers[index];
+                
+                if (isCorrect) {
+                    blank.classList.add('fill-correct');
+                    correctCount++;
+                } else {
+                    blank.classList.add('fill-incorrect');
+                }
+            });
+            
+            userAnswers[currentQuestion] = userAnswers;
+            
+            if (correctCount === question.correct.length) {
+                quizScore++;
+                document.getElementById('score').textContent = quizScore;
+            }
+            
+            const container = document.getElementById('quizContainer');
+            const feedback = document.createElement('div');
+            feedback.className = 'mt-4 p-3 rounded-lg ' + 
+                (correctCount === question.correct.length ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+            feedback.innerHTML = correctCount === question.correct.length ? 
+                '✅ Tutti i pinyin sono corretti!' : 
+                '❌ Alcuni pinyin sono errati. Pinyin corretti: ' + question.correct.join(', ');
+            container.appendChild(feedback);
+            
+            enableNextButton();
+        }
+
+        function submitTranslation(correctAnswer) {
+            const userAnswer = document.getElementById('translationInput').value.trim();
+            
+            if (!userAnswer) {
+                alert('Inserisci la traduzione!');
+                return;
+            }
+            
+            const isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+            
+            userAnswers[currentQuestion] = userAnswer;
+            
+            const input = document.getElementById('translationInput');
+            input.disabled = true;
+            
+            if (isCorrect) {
+                input.classList.add('correct');
+                quizScore++;
+                document.getElementById('score').textContent = quizScore;
+            } else {
+                input.classList.add('incorrect');
+            }
+            
+            const container = input.parentElement;
+            const feedback = document.createElement('div');
+            feedback.className = 'mt-3 p-3 rounded-lg ' + (isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+            feedback.innerHTML = isCorrect ? 
+                '✅ Traduzione corretta!' : 
+                '❌ Traduzione errata. Risposta corretta: ' + escapeHtml(correctAnswer);
+            container.appendChild(feedback);
+            
+            enableNextButton();
+        }
+
+        function selectMatch(type, index) {
+            const items = document.querySelectorAll('[data-type="' + type + '"]');
+            
+            // Clear previous selections of this type
+            items.forEach(item => {
+                item.classList.remove('match-selected');
+            });
+            
+            // Select current item
+            const selectedItem = document.querySelector('[data-type="' + type + '"][data-index="' + index + '"]');
+            selectedItem.classList.add('match-selected');
+            
+            selectedMatches[type] = index;
+            
+            // If both char and pinyin are selected, create match
+            if (selectedMatches.char !== undefined && selectedMatches.pinyin !== undefined) {
+                createMatch(selectedMatches.char, selectedMatches.pinyin);
+                selectedMatches = {};
+            }
+        }
+
+        function createMatch(charIndex, pinyinIndex) {
+            const charItem = document.querySelector('[data-type="char"][data-index="' + charIndex + '"]');
+            const pinyinItem = document.querySelector('[data-type="pinyin"][data-index="' + pinyinIndex + '"]');
+            
+            charItem.classList.remove('match-selected');
+            pinyinItem.classList.remove('match-selected');
+            
+            // Store the match
+            if (!charItem.dataset.matched) {
+                charItem.dataset.matched = pinyinIndex;
+                pinyinItem.dataset.matched = charIndex;
+                
+                charItem.style.opacity = '0.7';
+                pinyinItem.style.opacity = '0.7';
+                
+                // Check if all matches are made
+                const question = quizData[currentQuestion];
+                const allMatched = question.characters.every((_, i) => {
+                    const item = document.querySelector('[data-type="char"][data-index="' + i + '"]');
+                    return item.dataset.matched !== undefined;
+                });
+                
+                if (allMatched) {
+                    setTimeout(checkMatches, 500);
+                }
+            }
+        }
+
+        function checkMatches() {
+            const question = quizData[currentQuestion];
+            let correctMatches = 0;
+            
+            question.characters.forEach((char, charIndex) => {
+                const charItem = document.querySelector('[data-type="char"][data-index="' + charIndex + '"]');
+                const pinyinItem = document.querySelector('[data-type="pinyin"][data-index="' + charIndex + '"]');
+                
+                const matchedPinyinIndex = parseInt(charItem.dataset.matched);
+                
+                if (matchedPinyinIndex === charIndex) {
+                    charItem.classList.add('match-correct');
+                    pinyinItem.classList.add('match-correct');
+                    correctMatches++;
+                } else {
+                    charItem.classList.add('match-incorrect');
+                    const wrongPinyinItem = document.querySelector('[data-type="pinyin"][data-index="' + matchedPinyinIndex + '"]');
+                    if (wrongPinyinItem) {
+                        wrongPinyinItem.classList.add('match-incorrect');
+                    }
+                }
+            });
+            
+            userAnswers[currentQuestion] = correctMatches;
+            
+            if (correctMatches === question.characters.length) {
+                quizScore++;
+                document.getElementById('score').textContent = quizScore;
+            }
+            
+            // Disable all match items
+            document.querySelectorAll('.match-item').forEach(item => {
+                item.style.pointerEvents = 'none';
+            });
+            
+            const container = document.getElementById('quizContainer');
+            const feedback = document.createElement('div');
+            feedback.className = 'mt-4 p-3 rounded-lg ' + 
+                (correctMatches === question.characters.length ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+            feedback.innerHTML = correctMatches === question.characters.length ? 
+                '✅ Tutti gli abbinamenti sono corretti!' : 
+                '❌ Alcuni abbinamenti sono errati. Abbinamenti corretti: ' + correctMatches + '/' + question.characters.length;
+            container.appendChild(feedback);
+            
+            enableNextButton();
+        }
+
+        function setupDragAndDrop() {
+            const dragItems = document.querySelectorAll('.drag-item');
+            const dropSlots = document.querySelectorAll('.drop-slot');
+            
+            dragItems.forEach(item => {
+                item.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', e.target.dataset.item);
+                    e.target.style.opacity = '0.5';
+                });
+                
+                item.addEventListener('dragend', (e) => {
+                    e.target.style.opacity = '1';
+                });
+            });
+            
+            dropSlots.forEach(slot => {
+                slot.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    slot.classList.add('drag-over');
+                });
+                
+                slot.addEventListener('dragleave', () => {
+                    slot.classList.remove('drag-over');
+                });
+                
+                slot.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const itemText = e.dataTransfer.getData('text/plain');
+                    
+                    slot.innerHTML = '';
+                    slot.classList.remove('drag-over');
+                    
+                    const droppedItem = document.createElement('div');
+                    droppedItem.className = 'bg-red-100 border-2 border-red-200 rounded-lg p-3 text-center font-medium chinese-char';
+                    droppedItem.textContent = itemText;
+                    droppedItem.dataset.item = itemText;
+                    slot.appendChild(droppedItem);
+                    
+                    const originalItem = Array.from(dragItems).find(item => item.dataset.item === itemText);
+                    if (originalItem) {
+                        originalItem.style.display = 'none';
+                    }
+                    
+                    const filledSlots = Array.from(dropSlots).filter(s => s.children.length > 0);
+                    if (filledSlots.length === dropSlots.length) {
+                        checkDragAnswer();
+                    }
+                });
+            });
+        }
+
+        function checkDragAnswer() {
+            const question = quizData[currentQuestion];
+            const dropSlots = document.querySelectorAll('.drop-slot');
+            const userOrder = Array.from(dropSlots).map(slot => {
+                const item = slot.querySelector('[data-item]');
+                return item ? item.dataset.item : '';
+            });
+            
+            let correctOrder;
+            if (question.type === 'chinese-order') {
+                correctOrder = question.characters;
+            } else {
+                correctOrder = question.correct.map(index => question.items[index]);
+            }
+            
+            const isCorrect = JSON.stringify(userOrder) === JSON.stringify(correctOrder);
+            
+            userAnswers[currentQuestion] = userOrder;
+            
+            dropSlots.forEach((slot, index) => {
+                const item = slot.querySelector('[data-item]');
+                if (item) {
+                    if (userOrder[index] === correctOrder[index]) {
+                        item.classList.remove('bg-red-100', 'border-red-200');
+                        item.classList.add('bg-green-100', 'border-green-200');
+                    } else {
+                        item.classList.remove('bg-red-100', 'border-red-200');
+                        item.classList.add('bg-red-100', 'border-red-400');
+                    }
+                }
+            });
+            
+            if (isCorrect) {
+                quizScore++;
+                document.getElementById('score').textContent = quizScore;
+            }
+            
+            const container = document.getElementById('quizContainer');
+            const feedback = document.createElement('div');
+            feedback.className = 'mt-4 p-3 rounded-lg ' + (isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800');
+            feedback.innerHTML = isCorrect ? 
+                '✅ Ordine corretto!' : 
+                '❌ Ordine errato. Ordine corretto: ' + correctOrder.join(' ');
+            container.appendChild(feedback);
+            
+            enableNextButton();
+        }
+
+        function enableNextButton() {
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = false;
+            nextBtn.className = 'bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors';
+            
+            if (currentQuestion === quizData.length - 1) {
+                nextBtn.textContent = 'Vedi Risultati';
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < quizData.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quizSection').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+            
+            const percentage = Math.round((quizScore / quizData.length) * 100);
+            document.getElementById('finalScore').textContent = quizScore + '/' + quizData.length;
+            
+            let message = '';
+            if (percentage >= 90) {
+                message = '太棒了！你是中文专家！🌟';
+            } else if (percentage >= 70) {
+                message = '很好！你的中文很不错！👏';
+            } else if (percentage >= 50) {
+                message = '不错！继续努力学习！💪';
+            } else {
+                message = '加油！多练习就会进步！📚';
+            }
+            
+            document.getElementById('scoreMessage').textContent = percentage + '% - ' + message;
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            userAnswers = [];
+            quizScore = 0;
+            selectedMatches = {};
+            document.getElementById('score').textContent = '0';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('quizSection').style.display = 'block';
+            document.getElementById('nextBtn').textContent = 'Successivo →';
+            loadQuestion();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        loadQuestion();
+    <\/script>
 </body>
+</html>`;
+        }
+
+        function clearAll() {
+            if (confirm('⚠️ Sei sicuro di voler cancellare tutto? Questa azione non può essere annullata.')) {
+                questions = [];
+                currentQuestionIndex = 1;
+                document.getElementById('quizTitle').value = '';
+                clearQuestionForm();
+                document.getElementById('questionNumber').textContent = '1';
+                updateQuestionsList();
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function sanitizeFilename(filename) {
+            return filename.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'977ed828819dedaf',t:'MTc1NjY2NzU5OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
