@@ -16,7 +16,7 @@ export default function App() {
   // PDF Library State
   const defaultPdfs = [
     { name: 'Atena_Grammatica.pdf', url: '/Atena_Grammatica.pdf' },
-    { name: 'chinese-per-i-bambini.pdf', url: '/chinese-per-i-bambini.pdf' },
+    { name: 'chinese.pdf', url: '/chinese-per-i-bambini.pdf' },
   ];
 
   const [pdfList, setPdfList] = useState<Array<{ name: string; url?: string }>>(defaultPdfs);
