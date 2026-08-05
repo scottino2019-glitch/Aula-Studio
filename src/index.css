@@ -29,13 +29,13 @@ body {
 
 .notebook-page {
   background-color: var(--paper-color);
-  width: 850px;
+  width: 900px;
   max-width: 100%;
   min-height: 1000px;
   border-radius: 15px;
   box-shadow: 10px 10px 25px rgba(0,0,0,0.1);
   position: relative;
-  padding: 50px 50px 50px 110px;
+  padding: 40px 30px 40px 65px;
   background-image: radial-gradient(#d1d1d1 1.2px, transparent 1.2px);
   background-size: 30px 30px;
   box-sizing: border-box;
@@ -44,7 +44,7 @@ body {
 .notebook-page::before {
   content: "";
   position: absolute;
-  left: 35px; top: 0; bottom: 0; width: 40px;
+  left: 18px; top: 0; bottom: 0; width: 28px;
   background: linear-gradient(to bottom, transparent 15px, #999 15px, #999 35px, transparent 35px);
   background-size: 100% 50px;
 }
@@ -222,19 +222,19 @@ h2 { border-bottom: 3px solid var(--accent-pink); display: inline-block; margin-
 /* --- ADATTAMENTO PER CELLULARE --- */
 @media (max-width: 768px) {
   body {
-    padding: 5px;
+    padding: 4px;
   }
 
   .notebook-page {
     width: 100%;
-    padding: 30px 15px 30px 50px;
+    padding: 20px 10px 20px 32px;
     box-sizing: border-box;
     min-height: auto;
   }
 
   .notebook-page::before {
-    left: 10px;
-    width: 25px;
+    left: 8px;
+    width: 16px;
   }
 
   .content-grid {

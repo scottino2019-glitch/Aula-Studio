@@ -6,6 +6,54 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+// IndexedDB helper for App.tsx
+const DB_NAME = 'StudyApp_PDF_DB';
+const DB_VERSION = 1;
+const STORE_NAME = 'pdf_files';
+
+function openPdfDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = (e) => {
+      const db = (e.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      }
+    };
+    request.onsuccess = (e) => resolve((e.target as IDBOpenDBRequest).result);
+    request.onerror = (e) => reject((e.target as IDBOpenDBRequest).error);
+  });
+}
+
+async function savePdfToDB(id: string, name: string, arrayBuffer: ArrayBuffer): Promise<void> {
+  const db = await openPdfDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    store.put({ id, name, data: arrayBuffer, date: Date.now() });
+    tx.oncomplete = () => resolve();
+    tx.onerror = (e) => reject((e.target as IDBTransaction).error);
+  });
+}
+
+async function getSavedPdfsFromDB(): Promise<Array<{ id: string; name: string }>> {
+  try {
+    const db = await openPdfDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const request = store.getAll();
+      request.onsuccess = () => {
+        const res = request.result || [];
+        resolve(res.map((item: any) => ({ id: item.id, name: item.name })));
+      };
+      request.onerror = () => resolve([]);
+    });
+  } catch (e) {
+    return [];
+  }
+}
+
 export default function App() {
   // State for note & progress text areas
   const [noteText, setNoteText] = useState<string>('');
@@ -14,14 +62,11 @@ export default function App() {
 
   // PDF Library State
   const defaultPdfs = [
-    { name: 'Atena_Grammatica.pdf', url: '/Atena_Grammatica.pdf' },
-    { name: 'chinese-per-i-bambini.pdf', url: '/chinese-per-i-bambini.pdf' },
+    { id: 'chinese-per-i-bambini.pdf', name: 'chinese-per-i-bambini.pdf' },
+    { id: 'Atena_Grammatica.pdf', name: 'Atena_Grammatica.pdf' },
   ];
 
-  const [pdfList, setPdfList] = useState<Array<{ name: string; url?: string }>>(defaultPdfs);
-  const [selectedPdf, setSelectedPdf] = useState<{ name: string; url?: string } | null>(null);
-  const [selectedPdfData, setSelectedPdfData] = useState<ArrayBuffer | undefined>(undefined);
-  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [pdfList, setPdfList] = useState<Array<{ id: string; name: string }>>(defaultPdfs);
 
   // App Link Viewer Modal State
   const [activeAppLink, setActiveAppLink] = useState<{ title: string; url: string } | null>(null);
@@ -32,7 +77,7 @@ export default function App() {
   const [isInstalled, setIsInstalled] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-  // Load initial data from localStorage
+  // Load initial data from localStorage and IndexedDB
   useEffect(() => {
     // Note Area
     const savedNote = localStorage.getItem('note-area');
@@ -57,24 +102,14 @@ export default function App() {
       }
     }
 
-    // Custom PDF list if saved
-    const savedPdfs = localStorage.getItem('custom-pdf-list');
-    if (savedPdfs) {
-      try {
-        const parsed = JSON.parse(savedPdfs);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const withUrls = parsed.map((item: { name: string; url?: string }) => ({
-            name: item.name,
-            url: item.url || `/${item.name}`
-          }));
-          setPdfList(withUrls);
-        }
-      } catch (e) {
-        console.error('Error loading saved PDFs', e);
+    // Load custom PDFs from IndexedDB
+    getSavedPdfsFromDB().then((customs) => {
+      if (customs.length > 0) {
+        setPdfList([...defaultPdfs, ...customs]);
       }
-    }
+    });
 
-    // PWA Install Event Listener
+    // PWA Install Event Listener & Message Handler
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -90,10 +125,17 @@ export default function App() {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
+    const handleIframeMessage = (e: MessageEvent) => {
+      if (e.data && e.data.type === 'CLOSE_MODAL') {
+        setActiveAppLink(null);
+      }
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    window.addEventListener('message', handleIframeMessage);
 
     // Check if running as standalone display
     if (window.matchMedia('(display-mode: standalone)').matches) {
@@ -105,6 +147,7 @@ export default function App() {
       window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('message', handleIframeMessage);
     };
   }, []);
 
@@ -139,26 +182,30 @@ export default function App() {
   };
 
   // Upload Custom PDF
-  const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const fileUrl = URL.createObjectURL(file);
-    const newItem = { name: file.name, url: fileUrl };
-    const updated = [newItem, ...pdfList];
-    setPdfList(updated);
-    
-    // Save metadata with name
-    const toSave = updated.map(item => ({ name: item.name }));
-    localStorage.setItem('custom-pdf-list', JSON.stringify(toSave));
+    try {
+      const buffer = await file.arrayBuffer();
+      const fileId = `custom_${Date.now()}_${file.name}`;
+      await savePdfToDB(fileId, file.name, buffer);
 
-    // Open lightweight Biblioteca page
-    setActiveAppLink({ title: 'Biblioteca PDF', url: 'biblioteca.html' });
+      const newItem = { id: fileId, name: file.name };
+      setPdfList((prev) => [...prev, newItem]);
+
+      // Open lightweight Biblioteca page with this PDF
+      setActiveAppLink({ title: 'Biblioteca PDF', url: `biblioteca.html?pdf=${encodeURIComponent(fileId)}` });
+    } catch (err) {
+      console.error('Error uploading PDF:', err);
+      alert('Errore nel salvataggio del file PDF.');
+    }
   };
 
   // Open PDF Reader
-  const openPdfReader = (pdf?: { name: string; url?: string }) => {
-    setActiveAppLink({ title: 'Biblioteca PDF', url: 'biblioteca.html' });
+  const openPdfReader = (pdf?: { id: string; name: string }) => {
+    const targetId = pdf ? pdf.id : 'chinese-per-i-bambini.pdf';
+    setActiveAppLink({ title: 'Biblioteca PDF', url: `biblioteca.html?pdf=${encodeURIComponent(targetId)}` });
   };
 
   // App Link Click Handler
