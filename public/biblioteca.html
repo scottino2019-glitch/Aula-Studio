@@ -3,146 +3,654 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lingua Cinese - Biblioteca</title>
+    <title>Lingua Cinese - Biblioteca PDF</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        * {
+            box-sizing: border-box;
             margin: 0;
-            background-color: #f4f4f4;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f7;
+            color: #222;
+            padding-bottom: 30px;
         }
         header {
-            background-color: #e74c3c;
-            padding: 20px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            padding: 16px 20px;
             text-align: center;
             color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
         }
-        h1 { margin: 0 0 10px 0; }
-        .container {
-            max-width: 900px;
-            margin: auto;
-            padding: 20px;
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .pdf-viewer {
-            margin-bottom: 40px;
-            background: white;
-            padding: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            min-height: 200px;
-        }
-        canvas {
-            width: 100%;
-            border: 1px solid #ccc;
-            margin-bottom: 10px;
-            display: block;
-        }
-        /* Bottoni di selezione PDF */
-        .pdf-buttons {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .pdf-buttons button {
-            padding: 10px 18px;
-            margin: 5px;
-            background-color: #e74c3c;
-            border: none;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .pdf-buttons button:hover {
-            background-color: #c0392b;
+        h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            font-weight: 800;
         }
         .home-btn {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            border-radius: 6px;
+            gap: 6px;
+            border-radius: 8px;
             padding: 8px 16px;
-            font-size: 15px;
-            color: white;
-            font-weight: 600;
-            background: linear-gradient(to right, #ef4444, #b91c1c);
-            border: none;
+            font-size: 14px;
+            color: #333;
+            font-weight: 700;
+            background: #ffffff;
+            border: 2px solid #ffffff;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             text-decoration: none;
+            transition: all 0.2s;
         }
         .home-btn:hover {
-            background: linear-gradient(to right, #dc2626, #991b1b);
+            background: #f0f0f0;
+            transform: translateY(-1px);
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 12px;
+        }
+
+        /* Control Panel */
+        .controls-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        .select-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .select-wrapper {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 2px solid #e74c3c;
+            font-size: 14px;
+            font-weight: 600;
+            background: #fff;
+            color: #2c3e50;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .btn {
+            padding: 9px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .btn-red {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-red:hover {
+            background: #c0392b;
+        }
+
+        .btn-green {
+            background: #27ae60;
+            color: white;
+        }
+        .btn-green:hover {
+            background: #219653;
+        }
+
+        .btn-gray {
+            background: #edf2f7;
+            color: #4a5568;
+            border: 1px solid #cbd5e0;
+        }
+        .btn-gray:hover {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .btn-delete {
+            background: #fff5f5;
+            color: #e53e3e;
+            border: 1px solid #feb2b2;
+        }
+        .btn-delete:hover {
+            background: #fed7d7;
+        }
+
+        /* Toolbar page/zoom */
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding-top: 12px;
+            border-top: 1px solid #edf2f7;
+        }
+
+        .page-controls, .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .page-input {
+            width: 50px;
+            text-align: center;
+            padding: 6px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+
+        /* Viewer Container */
+        .pdf-viewer-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #canvas-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto !important;
+            border-radius: 6px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            background: white;
+        }
+
+        #iframe-viewer {
+            width: 100%;
+            height: 75vh;
+            border: none;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 40px 20px;
+            color: #718096;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #edf2f7;
+            color: #4a5568;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            header {
+                padding: 12px;
+            }
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .page-controls, .zoom-controls {
+                justify-content: center;
+            }
+            .btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 <body>
+
     <header>
-        <h1>📖 Biblioteca</h1>
+        <div class="header-title">
+            <span style="font-size: 1.5rem;">📖</span>
+            <h1>Biblioteca PDF</h1>
+        </div>
         
-        <button class="home-btn" onclick="window.history.length > 1 ? window.history.back() : window.close()">
-            <span style="margin-right: 6px;">
-                <svg style="width:20px; height:20px; vertical-align:middle;" fill="none" stroke="#FFFFFF" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                </svg>
-            </span>home
+        <button class="home-btn" onclick="goHome()">
+            <span>🏠</span> Home Studio
         </button>
     </header>
 
     <div class="container">
-        <div class="pdf-buttons">
-            <button onclick="loadPDF('chinese.pdf')">📄 Chinese per Elementari</button>
-            <button onclick="loadPDF('Atena_Grammatica.pdf')">📄 Grammatica Coreana</button>
+        <!-- Control Panel -->
+        <div class="controls-card">
+            <!-- Select and Upload Row -->
+            <div class="select-row">
+                <div class="select-wrapper">
+                    <select id="pdf-select" onchange="onSelectPdfChanged()">
+                        <option value="chinese-per-i-bambini.pdf">📄 Chinese per Elementari</option>
+                        <option value="Atena_Grammatica.pdf">📄 Grammatica Coreana</option>
+                    </select>
+                </div>
+
+                <label class="btn btn-green">
+                    <span>📁 Carica da PC / Cell</span>
+                    <input type="file" id="file-input" accept="application/pdf" style="display: none;" onchange="handleFileUpload(event)">
+                </label>
+
+                <button id="delete-btn" class="btn btn-delete" style="display: none;" onclick="deleteSelectedPdf()">
+                    <span>🗑️ Elimina</span>
+                </button>
+            </div>
+
+            <!-- Page & Zoom Toolbar -->
+            <div class="toolbar">
+                <div class="page-controls">
+                    <button class="btn btn-gray" onclick="changePage(-1)">◀ Indietro</button>
+                    <span style="font-size: 13px; font-weight: bold; margin: 0 4px;">Pagina</span>
+                    <input type="number" id="page-input" class="page-input" value="1" min="1" onchange="jumpToPage(this.value)">
+                    <span id="page-count" style="font-size: 13px; font-weight: bold; color: #718096;">di 1</span>
+                    <button class="btn btn-gray" onclick="changePage(1)">Avanti ▶</button>
+                </div>
+
+                <div class="zoom-controls">
+                    <button class="btn btn-gray" onclick="changeZoom(-0.2)">🔍 -</button>
+                    <span id="zoom-text" style="font-size: 12px; font-weight: bold; width: 45px; text-align: center;">100%</span>
+                    <button class="btn btn-gray" onclick="changeZoom(0.2)">🔍 +</button>
+                    <button id="mode-toggle-btn" class="btn btn-gray" onclick="toggleViewerMode()">📱 Modo Iframe</button>
+                </div>
+            </div>
         </div>
-        <div id="pdf-viewer" class="pdf-viewer"></div>
+
+        <!-- PDF Render Stage -->
+        <div class="pdf-viewer-card">
+            <div id="loading-msg" class="loading-spinner">
+                ⏳ Caricamento PDF in corso...
+            </div>
+
+            <!-- Single Page Canvas Renderer -->
+            <div id="canvas-wrapper">
+                <canvas id="pdf-canvas"></canvas>
+            </div>
+
+            <!-- Alternative Native Iframe Viewer -->
+            <iframe id="iframe-viewer" title="Lettore PDF"></iframe>
+        </div>
     </div>
 
-    <!-- Libreria PDF.js -->
+    <!-- PDF.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+
     <script>
+        // PDF.js setup
         const pdfjsLib = window['pdfjs-dist/build/pdf'];
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
 
-        function loadPDF(url) {
-            const viewer = document.getElementById('pdf-viewer');
-            viewer.innerHTML = '<p style="text-align:center; padding: 20px; color: #666;">Caricamento documento PDF in corso...</p>';
-            
-            pdfjsLib.getDocument(url).promise.then(function(pdf) {
-                viewer.innerHTML = '';
-                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    pdf.getPage(pageNum).then(function(page) {
-                        const scale = 1.3;
-                        const viewport = page.getViewport({ scale });
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-                        viewer.appendChild(canvas);
-                        const renderContext = {
-                            canvasContext: context,
-                            viewport: viewport
-                        };
-                        page.render(renderContext);
-                    });
-                }
-            }).catch(function(err) {
-                console.warn('First attempt failed for:', url, err);
-                // Fallback attempt for file path variations
-                let fallbackUrl = url;
-                if (url.startsWith('pdf/')) {
-                    fallbackUrl = url.replace('pdf/', '');
-                } else if (url === 'pdf/chinese.pdf' || url === 'chinese.pdf') {
-                    fallbackUrl = 'chinese.pdf';
-                }
+        // IndexedDB Configuration for persistent offline PDF storage
+        const DB_NAME = 'StudyApp_PDF_DB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'pdf_files';
 
-                if (fallbackUrl !== url) {
-                    loadPDF(fallbackUrl);
-                } else {
-                    viewer.innerHTML = '<p style="text-align:center; color:red; padding: 20px;">Impossibile caricare il PDF (' + url + ').</p>';
-                }
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = (e) => resolve(e.target.result);
+                request.onerror = (e) => reject(e.target.error);
             });
         }
 
-        // Carica il primo PDF di default
-        loadPDF('chinese-per-i-bambini.pdf');
+        async function savePdfToDB(id, name, arrayBuffer) {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                store.put({ id, name, data: arrayBuffer, date: Date.now() });
+                tx.oncomplete = () => resolve();
+                tx.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        async function getPdfFromDB(id) {
+            try {
+                const db = await openDB();
+                return new Promise((resolve) => {
+                    const tx = db.transaction(STORE_NAME, 'readonly');
+                    const store = tx.objectStore(STORE_NAME);
+                    const request = store.get(id);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => resolve(null);
+                });
+            } catch(e) {
+                return null;
+            }
+        }
+
+        async function getAllPdfsFromDB() {
+            try {
+                const db = await openDB();
+                return new Promise((resolve) => {
+                    const tx = db.transaction(STORE_NAME, 'readonly');
+                    const store = tx.objectStore(STORE_NAME);
+                    const request = store.getAll();
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => resolve([]);
+                });
+            } catch(e) {
+                return [];
+            }
+        }
+
+        async function deletePdfFromDB(id) {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                store.delete(id);
+                tx.oncomplete = () => resolve();
+                tx.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        // Global State
+        let currentPdfDoc = null;
+        let currentPageNum = 1;
+        let currentScale = 1.0;
+        let renderTask = null;
+        let viewerMode = 'canvas'; // 'canvas' or 'iframe'
+        let currentBlobUrl = null;
+
+        const defaultPdfs = [
+            { id: 'chinese-per-i-bambini.pdf', name: '📄 Chinese per Elementari', isDefault: true },
+            { id: 'Atena_Grammatica.pdf', name: '📄 Grammatica Coreana', isDefault: true }
+        ];
+
+        function goHome() {
+            if (window.parent && window.parent !== window && typeof window.parent.postMessage === 'function') {
+                window.parent.postMessage({ type: 'CLOSE_MODAL' }, '*');
+            }
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = '/';
+            }
+        }
+
+        async function initBiblioteca() {
+            await populateDropdown();
+
+            // Check URL param or localStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetPdf = urlParams.get('pdf') || localStorage.getItem('active_pdf_id') || 'chinese-per-i-bambini.pdf';
+
+            const selectEl = document.getElementById('pdf-select');
+            if ([...selectEl.options].some(opt => opt.value === targetPdf)) {
+                selectEl.value = targetPdf;
+            } else {
+                selectEl.value = 'chinese-per-i-bambini.pdf';
+            }
+
+            loadSelectedPdf();
+        }
+
+        async function populateDropdown() {
+            const selectEl = document.getElementById('pdf-select');
+            selectEl.innerHTML = '';
+
+            // Default PDFs
+            defaultPdfs.forEach(pdf => {
+                const opt = document.createElement('option');
+                opt.value = pdf.id;
+                opt.textContent = pdf.name;
+                selectEl.appendChild(opt);
+            });
+
+            // Uploaded PDFs from IndexedDB
+            const savedPdfs = await getAllPdfsFromDB();
+            savedPdfs.forEach(pdf => {
+                const opt = document.createElement('option');
+                opt.value = pdf.id;
+                opt.textContent = '💾 ' + pdf.name;
+                selectEl.appendChild(opt);
+            });
+        }
+
+        async function onSelectPdfChanged() {
+            const selectEl = document.getElementById('pdf-select');
+            const selectedVal = selectEl.value;
+            localStorage.setItem('active_pdf_id', selectedVal);
+
+            // Toggle delete button
+            const isDefault = defaultPdfs.some(p => p.id === selectedVal);
+            document.getElementById('delete-btn').style.display = isDefault ? 'none' : 'inline-flex';
+
+            loadSelectedPdf();
+        }
+
+        async function loadSelectedPdf() {
+            const selectedVal = document.getElementById('pdf-select').value;
+            const loadingMsg = document.getElementById('loading-msg');
+            loadingMsg.style.display = 'block';
+            loadingMsg.textContent = '⏳ Caricamento documento...';
+
+            if (currentBlobUrl) {
+                URL.revokeObjectURL(currentBlobUrl);
+                currentBlobUrl = null;
+            }
+
+            // Check if it's in IndexedDB
+            const dbRecord = await getPdfFromDB(selectedVal);
+
+            let pdfDataOrUrl = selectedVal;
+            if (dbRecord && dbRecord.data) {
+                pdfDataOrUrl = { data: dbRecord.data };
+                const blob = new Blob([dbRecord.data], { type: 'application/pdf' });
+                currentBlobUrl = URL.createObjectURL(blob);
+            } else {
+                // Public file URL
+                currentBlobUrl = selectedVal;
+            }
+
+            // Set iframe src for iframe mode
+            document.getElementById('iframe-viewer').src = currentBlobUrl;
+
+            try {
+                const loadingTask = pdfjsLib.getDocument(pdfDataOrUrl);
+                currentPdfDoc = await loadingTask.promise;
+
+                currentPageNum = 1;
+                document.getElementById('page-count').textContent = `di ${currentPdfDoc.numPages}`;
+                loadingMsg.style.display = 'none';
+
+                renderCurrentPage();
+            } catch (err) {
+                console.error('Error loading PDF document:', err);
+                loadingMsg.style.display = 'block';
+                loadingMsg.innerHTML = '<span style="color:#e74c3c;">❌ Impossibile caricare il file PDF. Prova a selezionarlo nuovamente o ricaricalo.</span>';
+            }
+        }
+
+        async function renderCurrentPage() {
+            if (!currentPdfDoc) return;
+            if (viewerMode === 'iframe') return;
+
+            if (renderTask) {
+                renderTask.cancel();
+                renderTask = null;
+            }
+
+            try {
+                const page = await currentPdfDoc.getPage(currentPageNum);
+                const canvas = document.getElementById('pdf-canvas');
+                const context = canvas.getContext('2d');
+
+                // Compute responsive fit scale
+                const containerWidth = document.getElementById('canvas-wrapper').clientWidth || 800;
+                const unscaledViewport = page.getViewport({ scale: 1.0 });
+                const baseFitScale = ((containerWidth - 24) / unscaledViewport.width) * currentScale;
+                const viewport = page.getViewport({ scale: Math.max(0.3, baseFitScale) });
+
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                renderTask = page.render(renderContext);
+                await renderTask.promise;
+                renderTask = null;
+
+                document.getElementById('page-input').value = currentPageNum;
+                document.getElementById('zoom-text').textContent = `${Math.round(currentScale * 100)}%`;
+            } catch (err) {
+                if (err && err.name !== 'RenderingCancelledException') {
+                    console.error('Error rendering page:', err);
+                }
+            }
+        }
+
+        function changePage(delta) {
+            if (!currentPdfDoc) return;
+            const newPage = currentPageNum + delta;
+            if (newPage >= 1 && newPage <= currentPdfDoc.numPages) {
+                currentPageNum = newPage;
+                renderCurrentPage();
+            }
+        }
+
+        function jumpToPage(val) {
+            if (!currentPdfDoc) return;
+            const pageNum = parseInt(val, 10);
+            if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= currentPdfDoc.numPages) {
+                currentPageNum = pageNum;
+                renderCurrentPage();
+            }
+        }
+
+        function changeZoom(delta) {
+            currentScale = Math.max(0.5, Math.min(2.5, currentScale + delta));
+            renderCurrentPage();
+        }
+
+        function toggleViewerMode() {
+            const canvasWrapper = document.getElementById('canvas-wrapper');
+            const iframeViewer = document.getElementById('iframe-viewer');
+            const toggleBtn = document.getElementById('mode-toggle-btn');
+
+            if (viewerMode === 'canvas') {
+                viewerMode = 'iframe';
+                canvasWrapper.style.display = 'none';
+                iframeViewer.style.display = 'block';
+                toggleBtn.textContent = '📄 Pagina Singola';
+            } else {
+                viewerMode = 'canvas';
+                canvasWrapper.style.display = 'flex';
+                iframeViewer.style.display = 'none';
+                toggleBtn.textContent = '📱 Modo Iframe';
+                renderCurrentPage();
+            }
+        }
+
+        async function handleFileUpload(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+
+            const loadingMsg = document.getElementById('loading-msg');
+            loadingMsg.style.display = 'block';
+            loadingMsg.textContent = '⏳ Salvataggio file in corso...';
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const fileId = 'custom_' + Date.now() + '_' + file.name;
+
+                await savePdfToDB(fileId, file.name, arrayBuffer);
+                await populateDropdown();
+
+                const selectEl = document.getElementById('pdf-select');
+                selectEl.value = fileId;
+                onSelectPdfChanged();
+            } catch (err) {
+                console.error('Error saving file:', err);
+                alert('Errore durante il caricamento del file PDF.');
+            }
+            event.target.value = '';
+        }
+
+        async function deleteSelectedPdf() {
+            const selectEl = document.getElementById('pdf-select');
+            const selectedVal = selectEl.value;
+
+            if (defaultPdfs.some(p => p.id === selectedVal)) {
+                alert('Impossibile eliminare i PDF predefiniti.');
+                return;
+            }
+
+            if (confirm('Vuoi eliminare questo PDF salvato?')) {
+                await deletePdfFromDB(selectedVal);
+                await populateDropdown();
+                selectEl.value = 'chinese-per-i-bambini.pdf';
+                onSelectPdfChanged();
+            }
+        }
+
+        // Window resize debounced re-render
+        let resizeTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (viewerMode === 'canvas') renderCurrentPage();
+            }, 250);
+        });
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', initBiblioteca);
     </script>
 </body>
 </html>
