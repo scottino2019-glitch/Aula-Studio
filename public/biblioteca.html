@@ -5,126 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lingua Cinese - Biblioteca</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             background-color: #f4f4f4;
-            color: #333;
-            padding-bottom: 40px;
         }
         header {
             background-color: #e74c3c;
-            padding: 16px 20px;
+            padding: 20px;
             text-align: center;
             color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
-        h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        h1 { margin: 0; }
         .container {
             max-width: 900px;
             margin: auto;
-            padding: 16px;
+            padding: 20px;
         }
         .pdf-viewer {
             margin-bottom: 40px;
             background: white;
-            padding: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            border-radius: 8px;
-            min-height: 300px;
+            padding: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
         canvas {
-            width: 100% !important;
-            height: auto !important;
+            width: 100%;
             border: 1px solid #ccc;
-            margin-bottom: 14px;
-            display: block;
-            background: #ffffff;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            border-radius: 4px;
+            margin-bottom: 10px;
         }
         /* Bottoni di selezione PDF */
         .pdf-buttons {
             text-align: center;
             margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
         }
-        .pdf-buttons button, .upload-btn {
-            padding: 10px 16px;
+        .pdf-buttons button {
+            padding: 8px 15px;
+            margin: 5px;
             background-color: #e74c3c;
             border: none;
             color: white;
             cursor: pointer;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 14px;
-            transition: background-color 0.2s, transform 0.1s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
+            border-radius: 5px;
         }
-        .pdf-buttons button:hover, .upload-btn:hover {
+        .pdf-buttons button:hover {
             background-color: #c0392b;
-            transform: translateY(-1px);
-        }
-        .upload-btn {
-            background-color: #27ae60;
-        }
-        .upload-btn:hover {
-            background-color: #219653;
-        }
-        .home-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            padding: 8px 16px;
-            font-size: 14px;
-            color: white;
-            font-weight: 600;
-            background: linear-gradient(to right, #dc2626, #b91c1c);
-            border: 1px solid rgba(255,255,255,0.4);
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            text-decoration: none;
-            gap: 6px;
-        }
-        .home-btn:hover {
-            background: linear-gradient(to right, #b91c1c, #991b1b);
-        }
-        .loading-text {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
-            font-size: 16px;
-            font-weight: bold;
-        }
-        .error-text {
-            text-align: center;
-            padding: 30px 20px;
-            color: #c0392b;
-            font-weight: bold;
         }
     </style>
 </head>
@@ -132,24 +56,18 @@
     <header>
         <h1>📖 Biblioteca</h1>
         
-        <button class="home-btn" onclick="goBackHome()">
-            <span>
-                <svg style="width:18px; height:18px; vertical-align:middle;" fill="none" stroke="#FFFFFF" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 011-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                </svg>
-            </span>
-            home
-        </button>
+<button class="inline-flex items-center justify-center rounded-md px-4 py-2 text-base text-white font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 bg-gradient-to-r from-red-500 to-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 active:transform active:scale-95" onclick="window.history.back()">
+   <span class="mr-2"> <svg class="w-6 h-6" fill="none" stroke="#EF4444" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+</svg> </span>home
+</button>
     </header>
 
     <div class="container">
-        <div class="pdf-buttons" id="buttons-container">
-            <button onclick="loadPDF('chinese.pdf')">📄 Chinese per Elementari</button>
-            <button onclick="loadPDF('Atena_Grammatica.pdf')">📄 Grammatica Coreana</button>
-            <label class="upload-btn">
-                <span>📁 Carica da Cell / PC</span>
-                <input type="file" id="file-uploader" accept="application/pdf" style="display: none;" onchange="handleFileSelected(event)">
-            </label>
+        <div class="pdf-buttons">
+            <button onclick="loadPDF('pdf/chinese.pdf')">📄 Chinese per Elementari</button>
+            <button onclick="loadPDF('pdf/Atena_Grammatica.pdf')">📄 Grammatica Coreana</button>
+            
         </div>
         <div id="pdf-viewer" class="pdf-viewer"></div>
     </div>
@@ -160,199 +78,30 @@
         const pdfjsLib = window['pdfjs-dist/build/pdf'];
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
 
-        // IndexedDB for uploaded PDF files
-        const DB_NAME = 'StudyApp_PDF_DB';
-        const DB_VERSION = 1;
-        const STORE_NAME = 'pdf_files';
-
-        function openDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-                request.onupgradeneeded = (e) => {
-                    const db = e.target.result;
-                    if (!db.objectStoreNames.contains(STORE_NAME)) {
-                        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-                    }
-                };
-                request.onsuccess = (e) => resolve(e.target.result);
-                request.onerror = (e) => reject(e.target.error);
-            });
-        }
-
-        async function savePdfToDB(id, name, arrayBuffer) {
-            const db = await openDB();
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE_NAME, 'readwrite');
-                const store = tx.objectStore(STORE_NAME);
-                store.put({ id, name, data: arrayBuffer, date: Date.now() });
-                tx.oncomplete = () => resolve();
-                tx.onerror = (e) => reject(e.target.error);
-            });
-        }
-
-        async function getPdfFromDB(id) {
-            try {
-                const db = await openDB();
-                return new Promise((resolve) => {
-                    const tx = db.transaction(STORE_NAME, 'readonly');
-                    const store = tx.objectStore(STORE_NAME);
-                    const request = store.get(id);
-                    request.onsuccess = () => resolve(request.result);
-                    request.onerror = () => resolve(null);
-                });
-            } catch (e) {
-                return null;
-            }
-        }
-
-        async function getAllPdfsFromDB() {
-            try {
-                const db = await openDB();
-                return new Promise((resolve) => {
-                    const tx = db.transaction(STORE_NAME, 'readonly');
-                    const store = tx.objectStore(STORE_NAME);
-                    const request = store.getAll();
-                    request.onsuccess = () => resolve(request.result || []);
-                    request.onerror = () => resolve([]);
-                });
-            } catch (e) {
-                return [];
-            }
-        }
-
-        function goBackHome() {
-            if (window.parent && window.parent !== window) {
-                try {
-                    window.parent.postMessage({ type: 'CLOSE_MODAL' }, '*');
-                } catch(e) {}
-            }
-            if (window.history.length > 1) {
-                window.history.back();
-            } else {
-                window.location.href = '/';
-            }
-        }
-
-        let currentRenderId = 0;
-
-        async function renderPdfDocument(pdfSource) {
-            const viewer = document.getElementById('pdf-viewer');
-            viewer.innerHTML = '<div class="loading-text">⏳ Caricamento PDF in corso...</div>';
-            
-            const renderId = ++currentRenderId;
-
-            try {
-                const loadingTask = pdfjsLib.getDocument(pdfSource);
-                const pdf = await loadingTask.promise;
-
-                if (renderId !== currentRenderId) return; // Superceded by newer request
-                
-                viewer.innerHTML = ''; // Reset container
-
-                // Use high scale factor (2.0 or 2.25) for ultra-sharp high-DPI rendering
-                const scale = Math.max(2.0, (window.devicePixelRatio || 1) * 1.5);
-
+        function loadPDF(url) {
+            document.getElementById('pdf-viewer').innerHTML = ''; // Reset contenuto
+            pdfjsLib.getDocument(url).promise.then(function(pdf) {
                 for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    if (renderId !== currentRenderId) return;
-
-                    const page = await pdf.getPage(pageNum);
-                    if (renderId !== currentRenderId) return;
-
-                    const viewport = page.getViewport({ scale });
-                    const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
-
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-
-                    viewer.appendChild(canvas);
-
-                    const renderContext = {
-                        canvasContext: context,
-                        viewport: viewport
-                    };
-                    await page.render(renderContext).promise;
+                    pdf.getPage(pageNum).then(function(page) {
+                        const scale = 1.3;
+                        const viewport = page.getViewport({ scale });
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        document.getElementById('pdf-viewer').appendChild(canvas);
+                        const renderContext = {
+                            canvasContext: context,
+                            viewport: viewport
+                        };
+                        page.render(renderContext);
+                    });
                 }
-            } catch (err) {
-                console.warn('PDF load error:', err);
-                if (renderId === currentRenderId) {
-                    viewer.innerHTML = '<div class="error-text">❌ Impossibile caricare il PDF. Riprova con un altro file.</div>';
-                }
-            }
-        }
-
-        async function loadPDF(urlOrId) {
-            // Check if it is a custom uploaded ID from IndexedDB
-            const dbRecord = await getPdfFromDB(urlOrId);
-            if (dbRecord && dbRecord.data) {
-                renderPdfDocument({ data: dbRecord.data });
-                return;
-            }
-
-            // Otherwise, resolve standard public files
-            let targetUrl = urlOrId;
-            if (targetUrl === 'chinese.pdf' || targetUrl === 'chinese.pdf') {
-                targetUrl = 'chinese.pdf';
-            } else if (targetUrl.startsWith('/')) {
-                targetUrl = targetUrl.replace('/', '');
-            }
-
-            renderPdfDocument(targetUrl);
-        }
-
-        async function loadCustomButtons() {
-            const container = document.getElementById('buttons-container');
-            const uploadBtnLabel = container.querySelector('.upload-btn');
-
-            const savedPdfs = await getAllPdfsFromDB();
-            savedPdfs.forEach(pdf => {
-                const btn = document.createElement('button');
-                btn.textContent = '📄 ' + pdf.name;
-                btn.onclick = () => loadPDF(pdf.id);
-                container.insertBefore(btn, uploadBtnLabel);
             });
         }
 
-        async function handleFileSelected(event) {
-            const file = event.target.files?.[0];
-            if (!file) return;
-
-            const viewer = document.getElementById('pdf-viewer');
-            viewer.innerHTML = '<div class="loading-text">⏳ Lettura file in corso...</div>';
-
-            try {
-                const arrayBuffer = await file.arrayBuffer();
-                const fileId = 'custom_' + Date.now() + '_' + file.name;
-
-                await savePdfToDB(fileId, file.name, arrayBuffer);
-
-                // Add button dynamically
-                const container = document.getElementById('buttons-container');
-                const uploadBtnLabel = container.querySelector('.upload-btn');
-                const btn = document.createElement('button');
-                btn.textContent = '📄 ' + file.name;
-                btn.onclick = () => loadPDF(fileId);
-                container.insertBefore(btn, uploadBtnLabel);
-
-                // Immediately render this file
-                renderPdfDocument({ data: arrayBuffer });
-            } catch (err) {
-                console.error('File upload error:', err);
-                alert('Errore durante il caricamento del file PDF.');
-            }
-            event.target.value = '';
-        }
-
-        // Initialize PDF reader
-        window.addEventListener('DOMContentLoaded', async () => {
-            await loadCustomButtons();
-
-            // Check URL query param
-            const params = new URLSearchParams(window.location.search);
-            const initialPdf = params.get('pdf') || 'chinese-per-i-bambini.pdf';
-
-            loadPDF(initialPdf);
-        });
+        // Carica il primo PDF di default
+        loadPDF('pdf/chinese.pdf');
     </script>
 </body>
 </html>
