@@ -1,57 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Download, Upload, FileText, X, Globe, Wifi, WifiOff, CheckCircle2, Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Download, Wifi, WifiOff, Globe, X } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
-
-// IndexedDB helper for App.tsx
-const DB_NAME = 'StudyApp_PDF_DB';
-const DB_VERSION = 1;
-const STORE_NAME = 'pdf_files';
-
-function openPdfDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = (e) => {
-      const db = (e.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-      }
-    };
-    request.onsuccess = (e) => resolve((e.target as IDBOpenDBRequest).result);
-    request.onerror = (e) => reject((e.target as IDBOpenDBRequest).error);
-  });
-}
-
-async function savePdfToDB(id: string, name: string, arrayBuffer: ArrayBuffer): Promise<void> {
-  const db = await openPdfDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    store.put({ id, name, data: arrayBuffer, date: Date.now() });
-    tx.oncomplete = () => resolve();
-    tx.onerror = (e) => reject((e.target as IDBTransaction).error);
-  });
-}
-
-async function getSavedPdfsFromDB(): Promise<Array<{ id: string; name: string }>> {
-  try {
-    const db = await openPdfDB();
-    return new Promise((resolve) => {
-      const tx = db.transaction(STORE_NAME, 'readonly');
-      const store = tx.objectStore(STORE_NAME);
-      const request = store.getAll();
-      request.onsuccess = () => {
-        const res = request.result || [];
-        resolve(res.map((item: any) => ({ id: item.id, name: item.name })));
-      };
-      request.onerror = () => resolve([]);
-    });
-  } catch (e) {
-    return [];
-  }
 }
 
 export default function App() {
@@ -61,12 +13,10 @@ export default function App() {
   const [mood, setMoodState] = useState<number | null>(null);
 
   // PDF Library State
-  const defaultPdfs = [
-    { id: 'chinese-per-i-bambini.pdf', name: 'chinese-per-i-bambini.pdf' },
-    { id: 'Atena_Grammatica.pdf', name: 'Atena_Grammatica.pdf' },
+  const pdfList = [
+    { name: 'chinese-per-i-bambini.pdf', url: 'biblioteca.html' },
+    { name: 'Atena_Grammatica.pdf', url: 'biblioteca.html' },
   ];
-
-  const [pdfList, setPdfList] = useState<Array<{ id: string; name: string }>>(defaultPdfs);
 
   // App Link Viewer Modal State
   const [activeAppLink, setActiveAppLink] = useState<{ title: string; url: string } | null>(null);
@@ -101,13 +51,6 @@ export default function App() {
         setMoodState(idx);
       }
     }
-
-    // Load custom PDFs from IndexedDB
-    getSavedPdfsFromDB().then((customs) => {
-      if (customs.length > 0) {
-        setPdfList([...defaultPdfs, ...customs]);
-      }
-    });
 
     // PWA Install Event Listener & Message Handler
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -181,31 +124,9 @@ export default function App() {
     setDeferredPrompt(null);
   };
 
-  // Upload Custom PDF
-  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const buffer = await file.arrayBuffer();
-      const fileId = `custom_${Date.now()}_${file.name}`;
-      await savePdfToDB(fileId, file.name, buffer);
-
-      const newItem = { id: fileId, name: file.name };
-      setPdfList((prev) => [...prev, newItem]);
-
-      // Open lightweight Biblioteca page with this PDF
-      setActiveAppLink({ title: 'Biblioteca PDF', url: `biblioteca.html?pdf=${encodeURIComponent(fileId)}` });
-    } catch (err) {
-      console.error('Error uploading PDF:', err);
-      alert('Errore nel salvataggio del file PDF.');
-    }
-  };
-
   // Open PDF Reader
-  const openPdfReader = (pdf?: { id: string; name: string }) => {
-    const targetId = pdf ? pdf.id : 'chinese-per-i-bambini.pdf';
-    setActiveAppLink({ title: 'Biblioteca PDF', url: `biblioteca.html?pdf=${encodeURIComponent(targetId)}` });
+  const openPdfReader = () => {
+    setActiveAppLink({ title: 'Biblioteca PDF', url: 'biblioteca.html' });
   };
 
   // App Link Click Handler
@@ -297,17 +218,8 @@ export default function App() {
       <div className="content-grid">
         <div className="left-col">
           <div className="section">
-            <div className="flex items-center justify-between pr-2">
+            <div className="flex items-center justify-between pr-2 mb-2">
               <h2>Libreria PDF 📄</h2>
-              <label className="text-xs bg-orange-100 hover:bg-orange-200 text-orange-800 border border-orange-300 px-2.5 py-1 rounded-lg cursor-pointer flex items-center gap-1 font-sans">
-                <Upload size={12} /> Carica PDF
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  className="hidden"
-                  onChange={handlePdfUpload}
-                />
-              </label>
             </div>
 
             <div style={{ fontSize: '0.9em', lineHeight: '1.8' }}>
@@ -315,7 +227,7 @@ export default function App() {
                 <div
                   key={idx}
                   className="flex items-center justify-between py-1 px-2 rounded hover:bg-black/5 cursor-pointer transition"
-                  onClick={() => openPdfReader(pdf)}
+                  onClick={() => openPdfReader()}
                 >
                   <span className="truncate">📄 {pdf.name}</span>
                   <span className="text-xs text-orange-600 font-bold hover:underline ml-2">Apri</span>
