@@ -144,7 +144,7 @@
 
     <div class="container">
         <div class="pdf-buttons" id="buttons-container">
-            <button onclick="loadPDF('chinese-per-i-bambini.pdf')">📄 Chinese per Elementari</button>
+            <button onclick="loadPDF('chinese.pdf')">📄 Chinese per Elementari</button>
             <button onclick="loadPDF('Atena_Grammatica.pdf')">📄 Grammatica Coreana</button>
             <label class="upload-btn">
                 <span>📁 Carica da Cell / PC</span>
@@ -291,10 +291,10 @@
 
             // Otherwise, resolve standard public files
             let targetUrl = urlOrId;
-            if (targetUrl === 'pdf/chinese.pdf' || targetUrl === 'chinese.pdf') {
-                targetUrl = 'chinese-per-i-bambini.pdf';
-            } else if (targetUrl.startsWith('pdf/')) {
-                targetUrl = targetUrl.replace('pdf/', '');
+            if (targetUrl === 'chinese.pdf' || targetUrl === 'chinese.pdf') {
+                targetUrl = 'chinese.pdf';
+            } else if (targetUrl.startsWith('/')) {
+                targetUrl = targetUrl.replace('/', '');
             }
 
             renderPdfDocument(targetUrl);
