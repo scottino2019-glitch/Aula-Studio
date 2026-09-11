@@ -275,7 +275,7 @@ export default function App() {
           <div className="section" style={{ marginTop: '40px' }}>
             <h2>Mood del Giorno 🧡</h2>
             <div className="mood-selector">
-              {['🧡', '🙂', '😐', '😴', '🫤', '🤪', '🤯'].map((emoji, idx) => (
+              {['🧡', '🙂', '😴', '🫤', '🤪', '🤯'].map((emoji, idx) => (
                 <span
                   key={idx}
                   className={`mood-btn ${mood === idx ? 'active' : ''}`}
