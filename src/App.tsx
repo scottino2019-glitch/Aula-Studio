@@ -157,6 +157,10 @@ export default function App() {
     { title: 'Gramm2', icon: '📗', href: 'https://scottino2019-glitch.github.io/GrammarForge/' },
     { title: 'LinguistBook', icon: '🌎', href: 'https://linguistbook.netlify.app/' },
     { title: 'LinguaCraft', icon: '🌏', href: 'https://lesson-creator.netlify.app/' },
+    { title: 'Comprensive Text', icon: '📃', href: 'https://comprensive-text.vercel.app/' },
+    { title: 'Creatore Card Ideo', icon: '🀄', href: 'https://creatore-card-ideogrammi.vercel.app/' },
+    { title: 'Card Proverbi', icon: '㊙', href: 'https://card-proverbi.vercel.app/' },
+    { title: 'Card Quiz', icon: '🈸', href: 'https://cardquiz.vercel.app/' },
   ];
 
   return (
@@ -271,7 +275,7 @@ export default function App() {
           <div className="section" style={{ marginTop: '40px' }}>
             <h2>Mood del Giorno 🧡</h2>
             <div className="mood-selector">
-              {['🧡', '🙂', '😐', '😴', '🫤'].map((emoji, idx) => (
+              {['🧡', '🙂', '😐', '😴', '🫤', '🤪', '🤯'].map((emoji, idx) => (
                 <span
                   key={idx}
                   className={`mood-btn ${mood === idx ? 'active' : ''}`}
