@@ -161,7 +161,7 @@ export default function App() {
     { title: 'Creatore Card Ideo', icon: '🀄', href: 'https://creatore-card-ideogrammi.vercel.app/' },
     { title: 'Card Proverbi', icon: '㊙', href: 'https://card-proverbi.vercel.app/' },
     { title: 'Card Quiz', icon: '🈸', href: 'https://cardquiz.vercel.app/' },
-     { title: 'Quaderni', icon: '📒', href: 'https://fogli-di-quaderni-per-temi.vercel.app/' },
+     { title: 'Quaderni per temi', icon: '📒', href: 'https://fogli-di-quaderni-per-temi.vercel.app/' },
   ];
 
   return (
