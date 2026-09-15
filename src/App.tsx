@@ -162,6 +162,10 @@ export default function App() {
     { title: 'Card Proverbi', icon: '㊙', href: 'https://card-proverbi.vercel.app/' },
     { title: 'Card Quiz', icon: '🈸', href: 'https://cardquiz.vercel.app/' },
      { title: 'Quaderni per temi', icon: '📒', href: 'https://fogli-di-quaderni-per-temi.vercel.app/' },
+ { title: 'Mappe con foto', icon: '🪩', href: 'https://mappe-concettuali.netlify.app/' },
+
+
+
   ];
 
   return (
