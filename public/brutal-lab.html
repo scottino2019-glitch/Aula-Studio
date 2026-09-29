@@ -331,7 +331,7 @@
           <span class="highlight">Responsive</span> & Dirette.
         </h1>
         <p class="hero-desc">
-          Seleziona una delle tue 13 applicazioni. Ogni pulsante si apre in una nuova finestra diretta. Puoi personalizzare tutti e 13 i link ed i titoli con il pulsante in alto "⚙️ MODIFICA 13 LINK"!
+          Seleziona una delle tue 17 applicazioni. Ogni pulsante si apre in una nuova finestra diretta. Puoi personalizzare tutti e 17 i link ed i titoli con il pulsante in alto "⚙️ MODIFICA 17 LINK"!
         </p>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
           <a href="#progetti" class="nav-btn btn-pink" style="padding: 12px 20px; font-size: 1rem;">
@@ -399,8 +399,8 @@
     </div>
   </div>
 
-  <script>
-    // Default 13 Applications Data
+    <script>
+    // Array completo con tutte le 17 applicazioni
     const defaultApps = [
       { id: 1, title: 'GrammarForge', url: 'https://scottino2019-glitch.github.io/GrammarForge/', desc: 'Piattaforma avanzata per la creazione e studio della grammatica.', bg: 'c-yellow', platform: 'GLITCH.IO' },
       { id: 2, title: 'LinguistBook', url: 'https://linguistbook.netlify.app/', desc: 'Libro di linguistica e dizionario interattivo multitarget.', bg: 'c-green', platform: 'NETLIFY' },
@@ -417,18 +417,16 @@
       { id: 13, title: 'FlashCard & Video', url: 'flashcard-video.html', desc: 'Flashcard interattive con supporto multimediale video.', bg: 'c-green', platform: 'LOCAL' },
       { id: 14, title: 'Card Proverbi Cinesi', url: 'https://card-proverbi.vercel.app/', desc: 'Card con disegni calligrafici, ideogrammi, pinyin, traduzione e spiegazione.', bg: 'c-cyan', platform: 'VERCEL' },
       { id: 15, title: 'Card Quiz Interattiva', url: 'https://cardquiz.vercel.app/', desc: 'Caccia ai Caratteri & Osservazione Visiva.', bg: 'c-pink', platform: 'VERCEL' },
-      { id: 16, title: 'Coprensive Text', url: 'https://comprensive-text.vercel.app/', desc: 'Creare esercizi di compremsione testi+Audio.', bg: 'c-pink', platform: 'VERCEL' },
-      { id: 17, title: 'LinguaCraft', url: 'https://linguacraft.ai.studio', desc: 'Creare esercizi di compremsione testi.', bg: 'c-cyan', platform: 'GOOGLE' },
-    
-    
+      { id: 16, title: 'Card Maker', url: 'https://linguacard-maker.vercel.app/', desc: 'Creare esercizi di comprensione testi+Audio.', bg: 'c-pink', platform: 'VERCEL' },
+      { id: 17, title: 'LinguaCraft', url: 'https://linguacraft.ai.studio', desc: 'Creare esercizi di comprensione testi.', bg: 'c-cyan', platform: 'GOOGLE' }
     ];
 
     function getApps() {
-      const saved = localStorage.getItem('brutal_lab_13_apps');
+      const saved = localStorage.getItem('brutal_lab_17_apps');
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length === 13) {
+          if (Array.isArray(parsed) && parsed.length === defaultApps.length) {
             return parsed;
           }
         } catch(e) {}
@@ -458,7 +456,7 @@
           <div class="card-body">
             <p class="card-desc">${app.desc || 'Applicazione esterna dedicata.'}</p>
             <div class="card-foot">
-              <span class="badge-pill" style="background: #FFF; font-weight: 900;">${app.platform || 'ESTERA'}</span>
+              <span class="badge-pill" style="background: #FFF; font-weight: 900;">${app.platform || 'ESTERNA'}</span>
               <span style="text-decoration: underline; color: #000;">VAI ALL'APP →</span>
             </div>
           </div>
@@ -479,7 +477,7 @@
           <div style="font-weight: 900; font-size: 0.85rem; margin-bottom: 6px;">App #${idx + 1}</div>
           <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
             <input type="text" id="app-title-${idx}" value="${app.title}" placeholder="Nome App" style="flex: 1; border: 2px solid #000; padding: 6px; font-weight: 700; font-family: inherit;">
-            <input type="text" id="app-plat-${idx}" value="${app.platform || 'ESTERA'}" placeholder="Tag (es. GLITCH, VERCEL)" style="width: 120px; border: 2px solid #000; padding: 6px; font-weight: 700; font-family: inherit;">
+            <input type="text" id="app-plat-${idx}" value="${app.platform || 'ESTERNA'}" placeholder="Tag (es. GLITCH, VERCEL)" style="width: 120px; border: 2px solid #000; padding: 6px; font-weight: 700; font-family: inherit;">
           </div>
           <input type="text" id="app-url-${idx}" value="${app.url}" placeholder="URL Completo (https://...)" style="width: 100%; border: 2px solid #000; padding: 6px; font-weight: 700; font-family: inherit;">
         `;
@@ -495,31 +493,33 @@
 
     function saveCustomApps() {
       const apps = getApps();
-      for (let i = 0; i < 13; i++) {
+      for (let i = 0; i < apps.length; i++) {
         const titleEl = document.getElementById(`app-title-${i}`);
         const urlEl = document.getElementById(`app-url-${i}`);
         const platEl = document.getElementById(`app-plat-${i}`);
         if (titleEl && urlEl) {
           apps[i].title = titleEl.value.trim() || `App #${i+1}`;
           apps[i].url = urlEl.value.trim() || '#';
-          apps[i].platform = platEl ? platEl.value.trim() : 'ESTERA';
+          apps[i].platform = platEl ? platEl.value.trim() : 'ESTERNA';
         }
       }
-      localStorage.setItem('brutal_lab_13_apps', JSON.stringify(apps));
+      localStorage.setItem('brutal_lab_17_apps', JSON.stringify(apps));
       closeEditorModal();
       renderApps();
     }
 
     function resetDefaultApps() {
-      if (confirm('Vuoi ripristinare i link predefiniti per le 13 app?')) {
+      if (confirm('Vuoi ripristinare i link predefiniti per tutte le 17 app?')) {
+        localStorage.removeItem('brutal_lab_17_apps');
         localStorage.removeItem('brutal_lab_13_apps');
         closeEditorModal();
         renderApps();
       }
     }
 
-    // Initialize
+    // Inizializzazione
     renderApps();
   </script>
+
 </body>
 </html>
