@@ -165,10 +165,13 @@ export default function App() {
     { title: 'Mappe con foto', icon: '🪩', href: 'https://mappe-concettuali.netlify.app/' },
      { title: 'Edizione Straordinaria', icon: '📰', href: 'https://edizione-straordinaria.vercel.app/' },
      { title: 'Fogli didattici', icon: '📋', href: 'https://fogli-didattici-multi-lingua.vercel.app/' },
-
-
-
-  ];
+    { title: 'LinguaCard Maker', icon: '🈲', href: 'https://linguacard-maker.vercel.app/' },
+    { title: 'GiocaCrea', icon: '🎮', href: 'https://giocacrea.vercel.app/' },
+     { title: 'HanziPro Studio', icon: '🈵', href: 'https://hanzi-studio-pro.vercel.app/' },
+     { title: 'LinguaLingo Builder', icon: '🌍', href: 'https://lingualingo-builder.netlify.app/' },
+    { title: 'GiocoLab', icon: '👾', href: 'https://giocolab.netlify.app/' },
+      { title: 'Studio Calligrafico', icon: '㊗', href: 'https://studio-calligrafico.netlify.app/' },
+];
 
   return (
     <div className="notebook-page">
